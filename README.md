@@ -8,7 +8,7 @@
 
 **Jetpack: 4.6.4**
 
-**Python: 3.6.9** (python 3.6.9 is the last version to support Jetpack4.6.6 so we use virtual env to use Python 3.8)
+**Python: 3.6.9** (python 3.6.9 is the last version to support Jetpack4.6.6)
 
 **openCV: 4.5.4** (not pip install, build openCV)
 
