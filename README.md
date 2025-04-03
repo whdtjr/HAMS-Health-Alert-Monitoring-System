@@ -54,7 +54,11 @@ sudo apt-get install libprotobuf-dev libgoogle-glog-dev libgflags-dev
 
 opencv build
 
-build 하기 전에 jetson nano는 4gb이기 때문에 build시에 메모리 부족 crash가 날 수 있다. 그러므로 swap file 수정을 통해 ram memory를 ssd에서 땡겨와서 이용하자
+
+**build 하기 전에 jetson nano는 4gb이기 때문에 build시에 메모리 부족 crash가 날 수 있다. 
+그러므로 swap file 수정을 통해 ram memory를 ssd에서 땡겨와서 이용하자**
+
+
 ```bash
 # dphys-swapfile
 sudo apt-get install dphys-swapfile
