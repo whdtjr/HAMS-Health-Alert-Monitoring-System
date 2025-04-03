@@ -20,7 +20,7 @@
 
 [jetson nano torch, torchvision download guide](https://forums.developer.nvidia.com/t/pytorch-for-jetson/72048)
 
-### how to set environment
+## Environment setting
 
 python 3.6.9를 이용하여 venv 생성
 
