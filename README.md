@@ -6,13 +6,13 @@
 
 **Jetson Nano B01**
 
-**Jetpack: 4.6.4**
+**Jetpack: 4.6.6**
 
 **Python: 3.6.9** (python 3.6.9 is the last version to support Jetpack4.6.6)
 
 **openCV: 4.5.4** (not pip install, build openCV)
 
-**pytorch: 1.10.0 cp38**
+**pytorch: 1.10.0 cp36**
 
 **torchvision: 0.11.1** 
 
