@@ -53,6 +53,28 @@ sudo apt-get install libprotobuf-dev libgoogle-glog-dev libgflags-dev
 ```
 
 opencv build
+
+build 하기 전에 jetson nano는 4gb이기 때문에 build시에 메모리 부족 crash가 날 수 있다. 그러므로 swap file 수정을 통해 ram memory를 ssd에서 땡겨와서 이용하자
+```bash
+# dphys-swapfile
+sudo apt-get install dphys-swapfile
+
+## 두 Swap파일의 값이 다음과 같도록 값을 수정
+# CONF_SWAPSIZE=4096
+# CONF_SWAPFACTOR=2
+# CONF_MAXSWAP=4096
+
+sudo vim /sbin/dphys-swapfile
+
+sudo vim /etc/dphys-swapfile
+
+# Jetson Nano 재부팅
+sudo reboot
+```
+용량 확인
+```bash
+free -h # swap 5.9GB 라면 성공
+```
 ```bash
 # zip down
 wget -O opencv.zip https://github.com/opencv/opencv/archive/4.5.4.zip
