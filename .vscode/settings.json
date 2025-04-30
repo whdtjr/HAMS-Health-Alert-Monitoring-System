@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "*.sqlbook": "sql",
+        "*.ndjson": "jsonl",
+        "*.dbclient-js": "javascript",
+        "spi_reader.h": "c",
+        "math.h": "c",
+        "stdio.h": "c",
+        "stdlib.h": "c",
+        "pthread.h": "c",
+        "stat.h": "c",
+        "fcntl.h": "c",
+        "inet.h": "c"
+    }
+}
