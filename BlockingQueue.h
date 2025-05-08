@@ -40,7 +40,7 @@
       * Indicates the number of variables (max_size excluded) of a BlockingQueue that have been initialized.
       * Useful when freeing dynamically allocated memory.
      */
-     int initialized;
+     int initialized; //cleanup 시 어떤 리소스까지 초기화됐는지 추적용
  };
  
  /*
@@ -85,6 +85,7 @@
 
  bool enqueue_with_overwrite(BlockingQueue* bqueue, void* element);
 
+ void BlockingQueue_print(BlockingQueue* this, void (*print_func)(void*));
 
 #define ZERO 0
 #define ONE 1

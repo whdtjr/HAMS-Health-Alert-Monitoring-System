@@ -246,3 +246,13 @@
     
     return BlockingQueue_enq(bqueue, element);
 }
+
+void BlockingQueue_print(BlockingQueue* this, void (*print_func)(void*)){
+  /** Locks the mutex to ensure thread safety.*/
+  if (pthread_mutex_lock(&this->mutex)) { cleanup_exit(this, "Error: pthread_mutex_lock() failed before getting the current size");}
+ 
+  Queue_print(this->queue, print_func);
+
+  /** Unlocks the mutex and return the size of the Queue.*/
+  if (pthread_mutex_unlock(&this->mutex)) { cleanup_exit(this, "Error: pthread_mutex_unlock() failed after getting the current size");}
+}

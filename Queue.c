@@ -103,3 +103,18 @@ void Queue_destroy(Queue* queue) {
 //     free(this->array);
 //     free(this);
 // }
+
+void Queue_print(Queue* queue, void (*print_func)(void*)) {
+    if (!queue || queue->current_size == 0) {
+        printf("Queue is empty.\n");
+        return;
+    }
+
+    int temp = queue->front;
+    for (int i = 0; i < queue->current_size; i++) {
+        printf("[%d]th element:  ", i);
+        print_func(queue->array[temp]);
+        printf("\n");
+        temp = (temp + 1) % queue->max_size;
+    }
+}

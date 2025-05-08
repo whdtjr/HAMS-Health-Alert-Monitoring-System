@@ -20,22 +20,14 @@ void error_handling(const char *message) {
     exit(EXIT_FAILURE);
 }
 
-void print_queue_contents(BlockingQueue* bqueue) {
-    printf("\n[현재 큐 상태 출력]\n---------------------------\n");
-    int size = BlockingQueue_size(bqueue);
-    for (int i = 0; i < size; ++i) {
-        PPGData* data = (PPGData*)BlockingQueue_deq(bqueue);
-        if (!data) continue;
 
-        char* timestamp_str = ctime(&data->timestamp);
-        if (timestamp_str[strlen(timestamp_str)-1] == '\n') timestamp_str[strlen(timestamp_str)-1] = '\0';
+void print_ppg_data(void* element) {
+    PPGData* data = (PPGData*) element;
+    char* timestamp_str = ctime(&data->timestamp);
+    if (timestamp_str[strlen(timestamp_str)-1] == '\n') timestamp_str[strlen(timestamp_str)-1] = '\0';
 
-        printf("[%d] Time: %s | Signal: %d | BPM: %d | IBI: %d | SDNN: %.2lf | RMSSD: %.2lf | PNN50: %.2lf\n",
-               i+1, timestamp_str, data->signal, data->bpm, data->ibi, data->sdnn, data->rmssd, data->pnn50);
-
-        free(data); // 큐에서 꺼낸 후 메모리 해제
-    }
-    printf("---------------------------\n\n");
+    printf("Time: %s | Signal: %d | BPM: %d | IBI: %d | SDNN: %.2lf | RMSSD: %.2lf | PNN50: %.2lf",
+            timestamp_str, data->signal, data->bpm, data->ibi, data->sdnn, data->rmssd, data->pnn50);
 }
 
 
@@ -71,15 +63,7 @@ int main(int argc, char **argv){
     if(listen(serv_sock,5) == -1)
             error_handling("listen() error");
 
-    printf("[Info] 클라이언트 연결을 기다리는 중입니다...\n");
-    // if(clnt_sock<0){           
-    //         clnt_addr_size = sizeof(clnt_addr);
-    //         clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_addr, 	&clnt_addr_size);
-    //         if(clnt_sock == -1)
-    //             error_handling("accept() error");   
-    //     }
-
-      
+    printf("클라이언트 연결을 기다리는 중..\n");
 
         if(clnt_sock<0){           
                 clnt_addr_size = sizeof(clnt_addr);
@@ -87,7 +71,7 @@ int main(int argc, char **argv){
                 if(clnt_sock == -1)
                     error_handling("accept() error");   
                 else
-                    printf("[Info] 클라이언트 연결 성공: %s:%d\n", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
+                    printf("클라이언트 연결 성공: %s:%d\n", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
         }
     
     char buffer[BUF_SIZE];
@@ -95,6 +79,8 @@ int main(int argc, char **argv){
     while(1) 
     {
         memset(buffer, 0, BUF_SIZE);
+        printf("initial buffer: %s\n", buffer);
+        //TCP 소켓으로부터 데이터가 도착할 때까지 block 상태로 대기
         int str_len = recv(clnt_sock, buffer, BUF_SIZE - 1, 0);
         if (str_len <= 0) break;
 
@@ -117,7 +103,9 @@ int main(int argc, char **argv){
         enqueue_with_overwrite(bqueue, data);
 
         //4.디버깅 용 로그 출력
-        print_queue_contents(bqueue);
+        printf("---- Queue Contents ----\n");
+        BlockingQueue_print(bqueue, print_ppg_data);
+        printf("------------------------\n");
     }
 
     //4. 자원정리

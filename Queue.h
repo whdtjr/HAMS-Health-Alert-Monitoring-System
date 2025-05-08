@@ -30,4 +30,6 @@ void Queue_clear(Queue* queue);
 // 큐 메모리 해제
 void Queue_destroy(Queue* queue);
 
+void Queue_print(Queue* queue, void (*print_func)(void*))
+
 #endif // QUEUE_H
