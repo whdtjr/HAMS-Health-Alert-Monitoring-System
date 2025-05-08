@@ -1,9 +1,10 @@
 {
     "files.associations": {
+        "*.dbclient-js": "javascript",
         "*.sqlbook": "sql",
         "*.ndjson": "jsonl",
-        "*.dbclient-js": "javascript",
         "blockingqueue.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "ppgdata.h": "c"
     }
 }

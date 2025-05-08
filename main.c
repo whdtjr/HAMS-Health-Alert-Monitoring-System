@@ -100,7 +100,7 @@ int main(int argc, char **argv){
         cJSON_Delete(root);
 
         // 3. Blocking Queue에 enqueue (오버라이트 방식)
-        enqueue_with_overwrite(bqueue, data);
+        BlockingQueue_enq_with_overwrite(bqueue, data);
 
         //4.디버깅 용 로그 출력
         printf("---- Queue Contents ----\n");

@@ -21,20 +21,6 @@ Queue* new_Queue(int max_size) {
     return queue;
 }
 
-
-// Queue *new_Queue(int max_size) {
-//     if (max_size <= 0) {
-//         return NULL;
-//     }
-//     Queue *this = malloc(sizeof(Queue));
-//     this->max_size = max_size;
-//     this->front = this->current_size = 0;
-//     this->rear = max_size - 1;
-//     this->array = malloc(this->max_size * sizeof(void*));  
-//     return this;
-// }
-
-
 bool Queue_enq(Queue* queue, void* element) {
     if (!queue || !element || queue->current_size == queue->max_size) return false;
 
@@ -43,17 +29,6 @@ bool Queue_enq(Queue* queue, void* element) {
     queue->current_size++;
     return true;
 }
-
-// bool Queue_enq(Queue* this, void* element) {
-//     if ((this->current_size == this->max_size) || (element == NULL)) {
-//         return false;
-//     } else {
-//         this->rear = (this->rear + 1) % this->max_size;
-//         ((void**)this->array)[this->rear] = element;
-//         this->current_size++;
-//         return true;
-//     }
-// }
 
 void* Queue_deq(Queue* queue) {
     if (!queue || queue->current_size == 0) return NULL;
@@ -64,15 +39,6 @@ void* Queue_deq(Queue* queue) {
     return item;
 }
 
-// void* Queue_deq(Queue* this) {
-//     if (Queue_isEmpty(this)) {
-//         return NULL;
-//     }
-//     void* item = ((void**)this->array)[this->front];
-//     this->front = (this->front + 1) % this->max_size;
-//     this->current_size--;
-//     return item;
-// }
 
 int Queue_size(Queue* queue) {
     return queue ? queue->current_size : 0;
@@ -88,21 +54,13 @@ void Queue_clear(Queue* queue) {
     queue->rear = queue->max_size - 1;
     queue->current_size = 0;
 }
-// void Queue_clear(Queue* this) {
-//     this->current_size = 0;
-//     this->front = 0;
-//     this->rear = this->max_size - 1;
-// }
+
 void Queue_destroy(Queue* queue) {
     if (!queue) return;
     free(queue->array);
     free(queue);
 }
 
-// void Queue_destroy(Queue* this) {
-//     free(this->array);
-//     free(this);
-// }
 
 void Queue_print(Queue* queue, void (*print_func)(void*)) {
     if (!queue || queue->current_size == 0) {

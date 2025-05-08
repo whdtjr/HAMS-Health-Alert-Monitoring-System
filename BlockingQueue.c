@@ -232,20 +232,24 @@
      free(this);
  }
 
- bool enqueue_with_overwrite(BlockingQueue* bqueue, void* element) {
+ bool BlockingQueue_enq_with_overwrite(BlockingQueue* this, void* element) {
     if (!element) return false;
+    if(BlockingQueue_size(this) == this -> max_size){
+        if (sem_wait(&this->full_slots)) { cleanup_exit(this, "Error: sem_wait() failed for full_slots semaphore");}
+        if (pthread_mutex_lock(&this->mutex)) { cleanup_exit(this, "Error: pthread_mutex_lock() failed");}
+        void *discarded = Queue_deq(this->queue);
+        free(discarded);
+        bool success = Queue_enq(this->queue, element);
+        if (pthread_mutex_unlock(&this->mutex)) { cleanup_exit(this, "Error: pthread_mutex_unlock() failed");}
+        if (sem_post(&this->full_slots)) { cleanup_exit(this, "Error: sem_post() failed for full_slots semaphore");}
+ 
+        return success;
 
-    // 먼저 시도
-    if (BlockingQueue_enq(bqueue, element)) {
-        return true;
+    }else{
+       bool success =  BlockingQueue_enq(this, element);
+       return success;
     }
-
-    // 실패하면 오래된 것 제거 후 다시 시도
-    void* dropped = BlockingQueue_deq(bqueue);  // 가장 오래된 항목 제거
-    free(dropped); // 또는 사용자 책임 (주의)
-    
-    return BlockingQueue_enq(bqueue, element);
-}
+ }
 
 void BlockingQueue_print(BlockingQueue* this, void (*print_func)(void*)){
   /** Locks the mutex to ensure thread safety.*/

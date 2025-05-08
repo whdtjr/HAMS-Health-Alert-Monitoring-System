@@ -83,7 +83,7 @@
   */
  void BlockingQueue_destroy(BlockingQueue* bqueue);
 
- bool enqueue_with_overwrite(BlockingQueue* bqueue, void* element);
+ bool BlockingQueue_enq_with_overwrite(BlockingQueue* this, void* element);
 
  void BlockingQueue_print(BlockingQueue* this, void (*print_func)(void*));
 
