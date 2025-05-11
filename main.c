@@ -52,10 +52,10 @@
 #define PULSE_CONNECT 9 // CONNECT TO OTHER END OF PIPE
 
 // VARIABLES USED TO DETERMINE SAMPLE JITTER & TIME OUT
-volatile unsigned int eventCounter, thisTime, lastTime, elapsedTime, jitter;
+volatile unsigned long eventCounter, thisTime, lastTime, elapsedTime, jitter;
 volatile int sampleFlag = 0; //getPulse()가 실행되었는지 표시하는 플래그
 volatile int sumJitter, firstTime, secondTime, duration;
-unsigned int timeOutStart, dataRequestStart, m; 
+unsigned long timeOutStart, dataRequestStart, m; 
 //timeOutStart : 마지막 유효 샘플링 시작 시간
 // VARIABLES USED TO DETERMINE BPM
 volatile int Signal; //현재 아날로그 센서로부터 읽은 신호값
