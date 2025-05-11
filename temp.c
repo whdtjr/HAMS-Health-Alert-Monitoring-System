@@ -35,35 +35,7 @@ void* drowsinessAssessmentThread(void* arg) {
     CLIENT_INFO * info = (CLIENT_INFO *) arg;
     printf("%s 스레드 시작\n", info -> id);
     printf("소켓 fd: %d\n", info -> fd);
-    char buffer[BUF_SIZE];
 
-    int str_len = recv(info -> fd, buffer, BUF_SIZE - 1, 0);
-    if (str_len <= 0) {
-        close(info->fd);
-        free(info);
-        return NULL;
-    }
-    
-
-    // JSON 파싱
-    cJSON* root = cJSON_Parse(buffer);
-    if (!root) {
-        fprintf(stderr, "JSON 파싱 실패\n");
-        close(info->fd);
-        free(info);
-        return NULL;
-    }
-
-    char status[10];
-    cJSON* status_item = cJSON_GetObjectItem(root, "status");
-    if (status_item && cJSON_IsString(status_item)) {
-        strcpy(status, status_item->valuestring);
-        printf("받은 status: %s\n", status);
-    } else {
-        fprintf(stderr, "status 항목 없음 또는 문자열 아님\n");
-    }
-
-    cJSON_Delete(root);
     close(info->fd);
     free(info);
     return NULL;
@@ -84,7 +56,9 @@ void error_handling(const char *message) {
 
 int main(int argc, char **argv){
 
+    char buffer[BUF_SIZE];
     char clientId[ID_SIZE];
+
 
     //port 번호가 제공되었는지 확인
     if(argc!=2){
@@ -124,8 +98,24 @@ int main(int argc, char **argv){
             printf("클라이언트 연결 성공: %s:%d\n", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
         
 
-        int	str_len = read(clnt_sock, clientId, sizeof(clientId));
-        clientId[str_len] = '\0';
+        int str_len = recv(clnt_sock, buffer, BUF_SIZE - 1, 0);
+   
+        cJSON* root = cJSON_Parse(buffer);
+        if (!root) {
+            fprintf(stderr, "JSON 파싱 실패\n");
+            close(clnt_sock);
+            break;
+        }
+
+        cJSON* client_item = cJSON_GetObjectItem(root, "id");
+        if (client_item && cJSON_IsString(client_item)) {
+            strcpy(clientId, client_item->valuestring);
+            printf("받은 id: %s\n", clientId);
+        } else {
+            fprintf(stderr, "status 항목 없음 또는 문자열 아님\n");
+        }
+
+        cJSON_Delete(root);
 
         CLIENT_INFO* info = malloc(sizeof(CLIENT_INFO));
         info -> fd = clnt_sock;
@@ -135,7 +125,7 @@ int main(int argc, char **argv){
 
         if (strcmp(clientId, "hrv") == 0) {
             pthread_create(&tid, NULL, hrvReceiverThread, info); 
-        }else if(strcmp(clientId, "drowzy") == 0){
+        }else if(strcmp(clientId, "drowsy") == 0){
             pthread_create(&tid, NULL, drowsinessAssessmentThread, info); 
         }else{
             pthread_create(&tid, NULL, arrhythmiaAssessmentThread, info); 
