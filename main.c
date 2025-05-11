@@ -65,14 +65,14 @@ int main(int argc, char **argv){
 
     printf("클라이언트 연결을 기다리는 중..\n");
 
-        if(clnt_sock<0){           
+    if(clnt_sock<0){           
                 clnt_addr_size = sizeof(clnt_addr);
                 clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_addr,     &clnt_addr_size);
                 if(clnt_sock == -1)
                     error_handling("accept() error");   
                 else
                     printf("클라이언트 연결 성공: %s:%d\n", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
-        }
+    }
     
     char buffer[BUF_SIZE];
     //3. 시스템이 살아있는 동안 아래내용 반복    
