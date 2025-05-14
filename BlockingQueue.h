@@ -87,6 +87,8 @@
 
  void BlockingQueue_print(BlockingQueue* this, void (*print_func)(void*));
 
+ void BlockingQueue_forEach(BlockingQueue* this, void (*callback)(void*, int, void*), void* ctx);
+
 #define ZERO 0
 #define ONE 1
 #define TWO 2

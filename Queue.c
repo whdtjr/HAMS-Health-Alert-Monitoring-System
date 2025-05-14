@@ -76,3 +76,13 @@ void Queue_print(Queue* queue, void (*print_func)(void*)) {
         temp = (temp + 1) % queue->max_size;
     }
 }
+
+void Queue_forEach(Queue* queue, void (*callback)(void*, int, void*), void* ctx) {
+    if (!queue || queue->current_size == 0) return;
+
+    int temp = queue->front;
+    for (int i = 0; i < queue->current_size; i++) {
+        callback(queue->array[temp], i, ctx);
+        temp = (temp + 1) % queue->max_size;
+    }
+}

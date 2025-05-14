@@ -12,31 +12,43 @@
 
 #include "BlockingQueue.h"
 #include "PPGData.h"
+#include "ClientInfo.h"
+#include "ThreadEntry.h"
+#include "SharedData.h"
 
 #define BUF_SIZE 512
+
+ThreadStatus hrvStatus = {false, PTHREAD_MUTEX_INITIALIZER};
+ThreadStatus drowsyStatus = {false, PTHREAD_MUTEX_INITIALIZER};
+ThreadStatus arrhythStatus = {false, PTHREAD_MUTEX_INITIALIZER};
 
 void error_handling(const char *message) {
     perror(message);
     exit(EXIT_FAILURE);
 }
 
-
-void print_ppg_data(void* element) {
-    PPGData* data = (PPGData*) element;
-    char* timestamp_str = ctime(&data->timestamp);
-    if (timestamp_str[strlen(timestamp_str)-1] == '\n') timestamp_str[strlen(timestamp_str)-1] = '\0';
-
-    printf("Time: %s | Signal: %d | BPM: %d | IBI: %d | SDNN: %.2lf | RMSSD: %.2lf | PNN50: %.2lf",
-            timestamp_str, data->signal, data->bpm, data->ibi, data->sdnn, data->rmssd, data->pnn50);
+bool try_start_thread(ThreadStatus* status, void* (*entry)(void*), CLIENT_INFO* info) {
+    pthread_t tid;
+    pthread_mutex_lock(&status->lock);
+    if (!status->running) {
+        status->running = true;
+        pthread_mutex_unlock(&status->lock);
+        pthread_create(&tid, NULL, entry, info); 
+        pthread_detach(tid);
+        return true;
+    } else {
+        pthread_mutex_unlock(&status->lock);
+        close(info->fd);
+        free(info);
+        return false;
+    }
 }
-
 
 int main(int argc, char **argv){
 
-    //1. Blocking Queue 큐 준비 (max size는 6)
-    BlockingQueue* bqueue = new_BlockingQueue(6);
-   
-    //2. 소켓 set up
+    char buffer[BUF_SIZE];
+    char clientId[ID_SIZE];
+
     //port 번호가 제공되었는지 확인
     if(argc!=2){
         printf("Usage : %s <port>\n",argv[0]);
@@ -46,7 +58,6 @@ int main(int argc, char **argv){
     int serv_sock,clnt_sock=-1;
     struct sockaddr_in serv_addr,clnt_addr;
     socklen_t clnt_addr_size;
-    char msg[2];
     
     serv_sock = socket(PF_INET, SOCK_STREAM, 0);
     if(serv_sock == -1)
@@ -63,57 +74,67 @@ int main(int argc, char **argv){
     if(listen(serv_sock,5) == -1)
             error_handling("listen() error");
 
-    printf("클라이언트 연결을 기다리는 중..\n");
-
-    if(clnt_sock<0){           
-                clnt_addr_size = sizeof(clnt_addr);
-                clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_addr,     &clnt_addr_size);
-                if(clnt_sock == -1)
-                    error_handling("accept() error");   
-                else
-                    printf("클라이언트 연결 성공: %s:%d\n", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
-    }
-    
-    char buffer[BUF_SIZE];
-    //3. 시스템이 살아있는 동안 아래내용 반복    
+    //시스템이 살아있는 동안 아래내용 반복    
     while(1) 
     {
-        memset(buffer, 0, BUF_SIZE);
-        printf("initial buffer: %s\n", buffer);
-        //TCP 소켓으로부터 데이터가 도착할 때까지 block 상태로 대기
+            
+        clnt_addr_size = sizeof(clnt_addr);
+        clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_addr, &clnt_addr_size);
+
+        if(clnt_sock == -1)
+            error_handling("accept() error");   
+        else
+            printf("클라이언트 연결 성공: %s:%d\n", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port));
+        
+
         int str_len = recv(clnt_sock, buffer, BUF_SIZE - 1, 0);
-        if (str_len <= 0) break;
-
-        // JSON 파싱
+   
         cJSON* root = cJSON_Parse(buffer);
-        if (!root) continue;
+        if (!root) {
+            fprintf(stderr, "JSON 파싱 실패\n");
+            close(clnt_sock);
+            break;
+        }
 
-        PPGData* data = malloc(sizeof(PPGData));
-        data->signal = cJSON_GetObjectItem(root, "signal")->valueint;
-        data->bpm = cJSON_GetObjectItem(root, "bpm")->valueint;
-        data->ibi = cJSON_GetObjectItem(root, "ibi")->valueint;
-        data->sdnn = cJSON_GetObjectItem(root, "sdnn")->valuedouble;
-        data->rmssd = cJSON_GetObjectItem(root, "rmssd")->valuedouble;
-        data->pnn50 = cJSON_GetObjectItem(root, "pnn50")->valuedouble;
-        data->timestamp = (time_t)cJSON_GetObjectItem(root, "timestamp")->valuedouble;
+        cJSON* client_item = cJSON_GetObjectItem(root, "id");
+        if (client_item && cJSON_IsString(client_item)) {
+            strcpy(clientId, client_item->valuestring);
+            printf("받은 id: %s\n", clientId);
+        } else {
+            fprintf(stderr, "status 항목 없음 또는 문자열 아님\n");
+        }
 
         cJSON_Delete(root);
 
-        // 3. Blocking Queue에 enqueue (오버라이트 방식)
-        BlockingQueue_enq_with_overwrite(bqueue, data);
+        CLIENT_INFO* info = malloc(sizeof(CLIENT_INFO));
+        info -> fd = clnt_sock;
+        strcpy(info -> ip, inet_ntoa(clnt_addr.sin_addr));
+        strcpy(info -> id, clientId);
 
-        //4.디버깅 용 로그 출력
-        printf("---- Queue Contents ----\n");
-        BlockingQueue_print(bqueue, print_ppg_data);
-        printf("------------------------\n");
+        if (strcmp(clientId, "hrv") == 0) {
+            if (try_start_thread(&hrvStatus, hrvReceiverThread, info)) {
+                printf("[INFO] %s 스레드 시작\n", clientId);
+            } else {
+                printf("[INFO] %s 스레드는 이미 실행 중\n", clientId);
+            }
+        }else if(strcmp(clientId, "drowsy") == 0){
+            if (try_start_thread(&drowsyStatus, drowsinessAssessmentThread, info)) {
+                printf("[INFO] %s 스레드 시작\n", clientId);
+            } else {
+                printf("[INFO] %s 스레드는 이미 실행 중\n", clientId);
+            }
+        }else{
+            if (try_start_thread(&arrhythStatus, arrhythmiaAssessmentThread, info)) {
+                printf("[INFO] %s 스레드 시작\n", clientId);
+            } else {
+                printf("[INFO] %s 스레드는 이미 실행 중\n", clientId);
+            }
+        }
     }
 
-    //4. 자원정리
-    BlockingQueue_clear(bqueue);
-    BlockingQueue_destroy(bqueue);
+    //자원정리
     close(clnt_sock);
     close(serv_sock);
-
      
     return(0);
 }

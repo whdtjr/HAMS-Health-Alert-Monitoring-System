@@ -5,6 +5,11 @@
         "*.ndjson": "jsonl",
         "blockingqueue.h": "c",
         "stdlib.h": "c",
-        "ppgdata.h": "c"
+        "ppgdata.h": "c",
+        "time.h": "c",
+        "inet.h": "c",
+        "stdio.h": "c",
+        "stdbool.h": "c",
+        "threadentry.h": "c"
     }
 }

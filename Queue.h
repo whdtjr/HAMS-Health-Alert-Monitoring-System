@@ -32,4 +32,6 @@ void Queue_destroy(Queue* queue);
 
 void Queue_print(Queue* queue, void (*print_func)(void*));
 
+void Queue_forEach(Queue* queue, void (*callback)(void*, int, void*), void* ctx);
+
 #endif // QUEUE_H
