@@ -18,7 +18,7 @@
 #define BUF_SIZE 512
 #define PPG_BUF_SIZE 30
 
-BlockingQueue* ppgDataBuffer = new_BlockingQueue(PPG_BUF_SIZE);
+BlockingQueue* ppgDataBuffer;
 
 void print_ppg_data(void* element) {
     PPGData* data = (PPGData*) element;
@@ -33,6 +33,8 @@ void print_ppg_data(void* element) {
 void* hrvReceiverThread(void* arg) {
 
     CLIENT_INFO * info = (CLIENT_INFO *) arg;
+
+    ppgDataBuffer = new_BlockingQueue(PPG_BUF_SIZE);
     printf("%s 스레드 시작\n", info -> id);
     
     char buffer[BUF_SIZE];
