@@ -4,7 +4,7 @@ CC = gcc
 CFLAGS = -Wall -I.
 LIBS = -lcjson -lpthread
 
-SRCS = main.c Queue.c BlockingQueue.c
+SRCS = main.c Queue.c BlockingQueue.c hrvReceiverThread.c drowsinessAssessmentThread.c arrhythmiaAssessmentThread.c
 OBJS = $(SRCS:.c=.o)
 TARGET = serverMain
 
