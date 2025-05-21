@@ -86,6 +86,8 @@ struct tm *timenow;
 PPGData latest_data;
 pthread_mutex_t data_lock = PTHREAD_MUTEX_INITIALIZER;
 
+//named_pipe fd
+int pipe_fd = -1;
 
 // FUNCTION PROTOTYPES
 void getPulse(int sig_num);
@@ -203,6 +205,12 @@ int main(int argc, char *argv[])
         exit(1);
     }
     
+    // 초기화 함수에서 파이프 열기 (예: setup() 또는 main 루프 시작 시)
+    pipe_fd = open("/tmp/signal_pipe", O_WRONLY);
+    if (pipe_fd == -1) {
+        perror("Failed to open FIFO");
+        // 적절한 에러 처리
+    }
 
     //SIGINT(2) == Ctrl + C 발생시 실행될 콜백 등록 등록
     signal(SIGINT,sigHandler);
@@ -331,9 +339,16 @@ void getPulse(int sig_num){
       thisTime = micros();
      //Signal = analogRead(BASE);
       Signal = readValue();
+
       if(Signal == -1){
         fatal(0,"spi not yet initialize",0);
       }
+      if(pipe_fd != -1)
+      {
+        int signalValue = Signal;
+        write(pipe_fd, &signalValue, sizeof(int));
+      }
+
       elapsedTime = thisTime - lastTime;
       lastTime = thisTime;
       jitter = elapsedTime - OPT_U;
