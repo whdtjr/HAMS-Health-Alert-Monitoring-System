@@ -5,7 +5,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-#define GPS_DEVICE "/dev/serial0"
+#define GPS_DEVICE "/dev/ttyAMA0" //나중에 수정
 #define BUFFER_SIZE 256
 
 // NMEA 포맷에서 위도/경도를 십진수 형태로 변환
@@ -51,6 +51,7 @@ int main() {
             // 예: $GPRMC,092751.000,A,5321.6802,N,00630.3372,W,0.06,31.66,280511,,,A*45
             if (strstr(buffer, "$GPRMC")) {
                 char* token = strtok(buffer, ",");
+                printf("token: %s\n", token);
                 int field = 0;
                 char lat[16], lon[16], ns = 'N', ew = 'E';
 
