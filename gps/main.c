@@ -20,8 +20,7 @@ int main(void){
     while (1)
     {
         printf("main thread\n");
-        usleep(100000000)
+        usleep(100000000);
     }
-    
     return 0;
 }

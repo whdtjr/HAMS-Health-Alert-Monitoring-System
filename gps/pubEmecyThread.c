@@ -31,8 +31,6 @@ void* pubEmecyThread(void* arg) {
         }
     }
 
-
-    // const char* payload = "{\"devId\":\"pi3\",\"symptom\":\"lat\":37.123,\"lng\":127.456}";
     cJSON* root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, "devId", DEVICEID);
     cJSON_AddStringToObject(root, "symptom", symptom);
