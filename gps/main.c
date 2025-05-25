@@ -17,5 +17,11 @@ int main(void){
     pthread_t tid;
     pthread_create(&tid, NULL, pubEmecyThread, "test symptom"); 
     pthread_detach(tid);
+    while (1)
+    {
+        printf("main thread\n");
+        usleep(100000000)
+    }
+    
     return 0;
 }
