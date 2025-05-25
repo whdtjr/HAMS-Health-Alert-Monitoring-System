@@ -10,6 +10,11 @@
         "inet.h": "c",
         "stdio.h": "c",
         "stdbool.h": "c",
-        "threadentry.h": "c"
+        "threadentry.h": "c",
+        "sharedata.h": "c",
+        "shareddata.h": "c",
+        "string.h": "c",
+        "mqtt.h": "c",
+        "pthread.h": "c"
     }
 }

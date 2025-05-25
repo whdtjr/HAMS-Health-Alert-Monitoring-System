@@ -3,9 +3,12 @@
 #include <string.h>
 #include "MQTTClient.h"
 
+
 #define ADDRESS     "tcp://192.168.219.103:1883"       // 브로커 주소
-#define CLIENTID    "pi3-gps-publisher"
-#define TOPIC       "gps/pi3/location"
+#define CLIENTID    "dev1-publisher"
+#define DEVICEID "dev1"
+#define EMECYTOPIC  "msg/emecy/" DEVICEID
+#define LOCATIONTOPIC  "msg/location/" DEVICEID
 #define QOS         1
 #define TIMEOUT     10000L
 
