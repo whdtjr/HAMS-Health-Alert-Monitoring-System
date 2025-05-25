@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "MQTTClient.h"
-#include "ShareData.h"
+#include "SharedData.h"
 
 //mqtt client를 생성하는 함수
 int initMQTTClient(MQTTClient* mqttClient){
