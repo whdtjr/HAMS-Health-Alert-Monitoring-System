@@ -7,10 +7,11 @@
 #include <pthread.h>
 #include <cjson/cJSON.h>
 
-#include <SharedData.h>
+#include "ThreadEntry.h"
+#include "SharedData.h"
 
 void* pubEmecyThread(void* arg) {
-   printf("pubEmecyThread 시작 arg: %s\n", arg);
+   printf("pubEmecyThread 시작 arg: %s\n",(char*) arg);
 
    char symptom[256];  
    strcpy(symptom, (char *) arg); 
@@ -33,7 +34,7 @@ void* pubEmecyThread(void* arg) {
 
     // const char* payload = "{\"devId\":\"pi3\",\"symptom\":\"lat\":37.123,\"lng\":127.456}";
     cJSON* root = cJSON_CreateObject();
-    cJSON_AddNumberToObject(root, "devId", DEVICEID);
+    cJSON_AddStringToObject(root, "devId", DEVICEID);
     cJSON_AddStringToObject(root, "symptom", symptom);
     cJSON_AddNumberToObject(root, "lat", 37.123);
     cJSON_AddNumberToObject(root, "lng", 127.456);
