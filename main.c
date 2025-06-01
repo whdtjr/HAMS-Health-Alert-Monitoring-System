@@ -208,6 +208,7 @@ int main(int argc, char *argv[])
         perror("pthread_create failed");
         exit(1);
     }
+    pthread_detach(send_thread);
     
     // 초기화 함수에서 파이프 열기 (예: setup() 또는 main 루프 시작 시)
     pipe_fd = open("/tmp/signal_pipe", O_WRONLY);
@@ -450,7 +451,7 @@ void getPulse(int sig_num){
         thresh = amp / 2 + T;                  // set thresh at 50% of the amplitude
         P = thresh;                            // reset these for next time
         T = thresh;
-        printf("threshold: %d\n", thresh);
+        // printf("threshold: %d\n", thresh);
       }
 
       //비정상 (무박동) 처리
