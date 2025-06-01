@@ -24,9 +24,9 @@ double convertToDecimalDegrees(char* nmeaCoord, char quadrant) {
 }
 
 void * gpsReadThread(void * arg){
-    printf("Gps Read Thread Start\n")
+    printf("Gps Read Thread Start\n");
     int serial_port = open(GPS_DEVICE, O_RDONLY | O_NOCTTY);
-    if (serial_port < 0) {
+    if (serial_port < 0) {  
         perror("Serial port open error");
          pthread_exit(NULL); 
     }
