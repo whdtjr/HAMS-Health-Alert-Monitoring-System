@@ -7,6 +7,7 @@
 #include <pthread.h>
 #include <cjson/cJSON.h>
 
+#include "MQTTClient.h"
 #include "ThreadEntry.h"
 #include "SharedData.h"
 

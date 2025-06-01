@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <cjson/cJSON.h>
-
-#include "ThreadEntry.h"
+#include "MQTTClient.h"
 #include "mqtt.h"
+#include "ThreadEntry.h"
 #include "SharedData.h"
 
 #define PIPE_NAME "/tmp/symptom_pipe"
