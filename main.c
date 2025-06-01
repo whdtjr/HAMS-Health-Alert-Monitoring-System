@@ -440,6 +440,7 @@ void getPulse(int sig_num){
         thresh = amp / 2 + T;                  // set thresh at 50% of the amplitude
         P = thresh;                            // reset these for next time
         T = thresh;
+        printf("threshold: %d\n", thresh);
       }
 
       //비정상 (무박동) 처리
