@@ -251,8 +251,8 @@ int main(int argc, char *argv[])
             timeOutStart = micros();
     
             // HRV time-domain 값들 여기서 추가 가능
-            printf("sample: %lu ms | Signal: %d | BPM: %d | IBI: %d ms | SDNN: %.2lf ms | RMMSSD: %.2lf ms | PNN50: %.2lf\n",
-                   sampleCounter, Signal, BPM, IBI, SDNN, RMSSD, PNN50);
+            printf("thresh: %d | sample: %lu ms | Signal: %d | BPM: %d | IBI: %d ms | SDNN: %.2lf ms | RMMSSD: %.2lf ms | PNN50: %.2lf\n",
+                   thresh, sampleCounter, Signal, BPM, IBI, SDNN, RMSSD, PNN50);
 
             pthread_mutex_lock(&data_lock);
             latest_data.timestamp = time(NULL);  // 수집 시각
@@ -420,16 +420,18 @@ void getPulse(int sig_num){
             rate[i] = rate[i + 1];                // and drop the oldest IBI value
             runningTotal += rate[i];              // add up the 9 oldest IBI values
           }
+          if (abs(IBI - rate[9]) <= 300) {// 갑작스러운 IBI 변화 거르기
+              rate[9] = IBI;                          // add the latest IBI to the rate array
+              runningTotal += rate[9];                // add the latest IBI to runningTotal
+              runningTotal /= 10;                     // average the last 10 IBI values
+              BPM = 60000 / runningTotal;             // how many beats can fit into a minute? that's BPM!
+              SDNN = getSdnn((int*)rate, runningTotal, 10);
+              RMSSD = getRmssd((int*)rate, 10);
+              PNN50 = getPnn50((int*)rate, 10);
+              QS = 1;                              // set Quantified Self flag (we detected a beat)
 
-          rate[9] = IBI;                          // add the latest IBI to the rate array
-          runningTotal += rate[9];                // add the latest IBI to runningTotal
-          runningTotal /= 10;                     // average the last 10 IBI values
-          BPM = 60000 / runningTotal;             // how many beats can fit into a minute? that's BPM!
-          SDNN = getSdnn((int*)rate, runningTotal, 10);
-          RMSSD = getRmssd((int*)rate, 10);
-          PNN50 = getPnn50((int*)rate, 10);
-          QS = 1;                              // set Quantified Self flag (we detected a beat)
-          //fadeLevel = MAX_FADE_LEVEL;             // If we're fading, re-light that LED.
+          }
+          
         }
       }
 
