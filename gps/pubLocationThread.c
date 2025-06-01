@@ -10,11 +10,15 @@
 #include "ThreadEntry.h"
 #include "SharedData.h"
 
+void setThreadStatus(bool status){
+    pthread_mutex_lock(&locationThreadStatus.lock);
+    locationThreadStatus.running = status;
+    pthread_mutex_unlock(&locationThreadStatus.lock);
+}
+
 void* pubLocationThread(void* arg) {
    printf("pubLocationThread 시작\n");
-   pthread_mutex_lock(&locationThreadStatus.lock);
-    locationThreadStatus.running = true;
-   pthread_mutex_unlock(&locationThreadStatus.lock);
+   setThreadStatus(true);
 
    pthread_mutex_lock(&remainedTimeLock);
 
@@ -28,6 +32,7 @@ void* pubLocationThread(void* arg) {
                 if (connectMQTTClient(&client) == -1) {
                     printf("브로커 서버 연결 실패\n");
                     pthread_mutex_unlock(&mqttClientLock);
+                    setThreadStatus(false);
                     pthread_exit(NULL);
                 } else {
                     printf("브로커 서버 연결 성공\n");
@@ -68,8 +73,6 @@ void* pubLocationThread(void* arg) {
             sleep(5);// 5초마다 반복
    }
 
-    pthread_mutex_lock(&locationThreadStatus.lock);
-    locationThreadStatus.running = false;
-    pthread_mutex_unlock(&locationThreadStatus.lock);
+    setThreadStatus(false);
     pthread_exit(NULL); 
 }

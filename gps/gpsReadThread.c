@@ -74,7 +74,7 @@ void * gpsReadThread(void * arg){
                 if (strlen(lat) > 0 && strlen(lng) > 0) {
                     double latitude = convertToDecimalDegrees(lat, ns);
                     double longitude = convertToDecimalDegrees(lng, ew);
-                    printf("Latitude: %.6f, Longitude: %.6f\n", latitude, longitude);
+                   // printf("Latitude: %.6f, Longitude: %.6f\n", latitude, longitude);
                     if(debug){
                         if(latitude == 0.0 || longitude == 0.0){ //디버깅용
                             latitude = 37.2778;
