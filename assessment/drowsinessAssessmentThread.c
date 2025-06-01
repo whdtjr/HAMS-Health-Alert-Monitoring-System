@@ -35,6 +35,8 @@ void sumHrvValues(void* element, int index, void* ctx){
 
 bool isFatiguedByHRV(BlockingQueue* buffer){
     int size = BlockingQueue_size(buffer);
+    if(size == 0) return false;
+    
     HrvAccumulator hrvAccumulator = {0, 0, 0};
     BlockingQueue_forEach(buffer, sumHrvValues, &hrvAccumulator);
     double avgOfSdnn = hrvAccumulator.sumSdnn / size;
