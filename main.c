@@ -251,7 +251,7 @@ int main(int argc, char *argv[])
             timeOutStart = micros();
     
             // HRV time-domain 값들 여기서 추가 가능
-            printf("thresh: %d | sample: %lu ms | Signal: %d | BPM: %d | IBI: %d ms | SDNN: %.2lf ms | RMMSSD: %.2lf ms | PNN50: %.2lf\n",
+            printf("thresh: %d | sample: %d ms | Signal: %d | BPM: %d | IBI: %d ms | SDNN: %.2lf ms | RMMSSD: %.2lf ms | PNN50: %.2lf\n",
                    thresh, sampleCounter, Signal, BPM, IBI, SDNN, RMSSD, PNN50);
 
             pthread_mutex_lock(&data_lock);

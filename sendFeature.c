@@ -62,16 +62,18 @@ void* send_feature_thread(void* arg) {
         close(sock);
         pthread_exit(NULL);
     }
-
-        // //서버와 연결
-        // if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
-        // error_handling("connect() error");
-
+    printf("Connect Success\n");
+    cJSON* idJson = cJSON_CreateObject();
+    cJSON_AddStringToObject(idJson, "id", "hrv");
+    char* idJsonString = cJSON_PrintUnformatted(idJson);
+    cJSON_Delete(idJson);
+    send(sock, idJsonString, strlen(idJsonString), 0);
+    free(idJsonString);
 
     // 2. 10초마다 latest_data를 JSON으로 만들어 전송
     while (1) {
      
-        printf("Connect Success\n");
+        
         fflush(stdout);  
         pthread_mutex_lock(&data_lock);
         PPGData copy = latest_data;
