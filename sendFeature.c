@@ -17,8 +17,8 @@ void print_sent_data(PPGData* data) {
     char* timestamp_str = ctime(&data->timestamp);
     if (timestamp_str[strlen(timestamp_str) - 1] == '\n') timestamp_str[strlen(timestamp_str) - 1] = '\0';
 
-    printf("[전송됨] Time: %s | Signal: %d | BPM: %d | IBI: %d | SDNN: %.2lf | RMSSD: %.2lf | PNN50: %.2lf\n",
-           timestamp_str, data->signal, data->bpm, data->ibi, data->sdnn, data->rmssd, data->pnn50);
+    // printf("[전송됨] Time: %s | Signal: %d | BPM: %d | IBI: %d | SDNN: %.2lf | RMSSD: %.2lf | PNN50: %.2lf\n",
+    //        timestamp_str, data->signal, data->bpm, data->ibi, data->sdnn, data->rmssd, data->pnn50);
 }
 
 
