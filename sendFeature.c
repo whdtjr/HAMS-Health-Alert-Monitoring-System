@@ -27,7 +27,7 @@ void* send_feature_thread(void* arg) {
     char* server_ip = ((char**)arg)[0];
     int server_port = atoi(((char**)arg)[1]);
 
-    printf("[Info] 전송 스레드가 시작되었습니다. 10초마다 서버(%s:%d)로 데이터를 전송합니다.\n", server_ip, server_port);
+    printf("[Info] PPG data Sending Thread Start\n");
     
  
     int sock;
@@ -71,7 +71,7 @@ void* send_feature_thread(void* arg) {
     // 2. 10초마다 latest_data를 JSON으로 만들어 전송
     while (1) {
      
-        printf("connect는 성공");
+        printf("Connect Success\n");
         fflush(stdout);  
         pthread_mutex_lock(&data_lock);
         PPGData copy = latest_data;

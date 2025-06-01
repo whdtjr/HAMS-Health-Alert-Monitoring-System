@@ -198,8 +198,6 @@ int main(int argc, char *argv[])
 
     char* send_args[2] = { argv[1], argv[2] };
     pthread_t send_thread;
-    // pthread_create(&send_thread, NULL, send_feature_thread, send_args);
-
     if (pthread_create(&send_thread, NULL, send_feature_thread, send_args) != 0) {
         perror("pthread_create failed");
         exit(1);
@@ -247,8 +245,8 @@ int main(int argc, char *argv[])
             timeOutStart = micros();
     
             // HRV time-domain 값들 여기서 추가 가능
-            // printf("sample: %lu ms | Signal: %d | BPM: %d | IBI: %d ms | SDNN: %.2lf ms | RMMSSD: %.2lf ms | PNN50: %.2lf\n",
-            //        sampleCounter, Signal, BPM, IBI, SDNN, RMSSD, PNN50);
+            printf("sample: %lu ms | Signal: %d | BPM: %d | IBI: %d ms | SDNN: %.2lf ms | RMMSSD: %.2lf ms | PNN50: %.2lf\n",
+                   sampleCounter, Signal, BPM, IBI, SDNN, RMSSD, PNN50);
 
             pthread_mutex_lock(&data_lock);
             latest_data.timestamp = time(NULL);  // 수집 시각
