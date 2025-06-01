@@ -50,7 +50,8 @@ bool isFatiguedByHRV(BlockingQueue* buffer){
 
 
 void sendDrowsyModeMessage() {
-    const char* fifo_path = "/tmp/assessment";
+   
+    const char* fifo_path = "/tmp/assessmentt";
     int fd = open(fifo_path, O_WRONLY);
     if (fd != -1) {
         write(fd, "drowzy mode\n", strlen("drowzy mode\n"));
@@ -73,6 +74,7 @@ void* drowsinessAssessmentThread(void* arg) {
 
     // HRV 기반 졸음 판단
     if(isFatiguedByHRV(ppgDataBuffer)){
+        printf("졸음 감지 && 피로 판단 -> 졸음으로 판단\n");
         //피로하다고 판단시 보이스 서비스 프로세스에게 졸음 모드 보내기
         sendDrowsyModeMessage();
         pthread_mutex_lock(&drowzyAlertLock);
@@ -81,6 +83,7 @@ void* drowsinessAssessmentThread(void* arg) {
     }else if(localCopy >= 3){
        // HRV 기반 졸음 판단 로직에서 피로하다고 판단하진 않았으나 3번연속 졸음 판단 신호가 캠 AI한테서 옴
        // 보이스 서비스 프로세스에게 졸음 모드 보내고 연속갯수 판단 변수 0
+       printf("졸음 감지 3번 발생 -> 졸음으로 판단\n");
        sendDrowsyModeMessage();
        pthread_mutex_lock(&drowzyAlertLock);
        drowzyAlertCount = 0;
