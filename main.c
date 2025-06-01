@@ -51,6 +51,12 @@
 #define PULSE_DATA 3    // SEND DATA PACKET TO FIFO
 #define PULSE_CONNECT 9 // CONNECT TO OTHER END OF PIPE
 
+
+#define MA_WINDOW 5
+int signalBuffer[MA_WINDOW];
+int signalIndex = 0;
+
+
 // VARIABLES USED TO DETERMINE SAMPLE JITTER & TIME OUT
 volatile unsigned long eventCounter, thisTime, lastTime, elapsedTime, jitter;
 volatile int sampleFlag = 0; //getPulse()가 실행되었는지 표시하는 플래그
@@ -329,6 +335,18 @@ void initPulseSensorVariables(void){
     timeOutStart = lastTime; //타임아웃 측정을 위한 기준 시간 저장
 }
 
+int getSmoothedSignal(int newValue) {
+    signalBuffer[signalIndex] = newValue;
+    signalIndex = (signalIndex + 1) % MA_WINDOW;
+
+    int sum = 0;
+    for (int i = 0; i < MA_WINDOW; i++) {
+        sum += signalBuffer[i];
+    }
+    return sum / MA_WINDOW;
+}
+
+
 //심박(Pulse, 즉 심장 박동)을 측정 (BPM 계산)
 void getPulse(int sig_num){
 
@@ -336,7 +354,8 @@ void getPulse(int sig_num){
     {
       thisTime = micros();
      //Signal = analogRead(BASE);
-      Signal = readValue();
+      //Signal = readValue();
+      Signal = getSmoothedSignal(readValue());
 
       if(Signal == -1){
         fatal(0,"spi not yet initialize",0);
