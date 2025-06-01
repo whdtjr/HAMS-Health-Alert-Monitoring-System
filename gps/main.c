@@ -76,7 +76,7 @@ int main(void){
                     pthread_create(&locationThread, NULL, pubLocationThread, NULL);
                     pthread_detach(locationThread);
                 }
-                 pthread_mutex_unlock(&locationThreadStatus.lock);
+                pthread_mutex_unlock(&locationThreadStatus.lock);
             }
             cJSON_Delete(root);
         }

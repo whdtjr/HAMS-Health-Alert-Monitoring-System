@@ -28,17 +28,17 @@ void* pubLocationThread(void* arg) {
         pthread_mutex_lock(&mqttClientLock);
         // 브로커 서버에 연결이 되어 있는지 확인
         if (MQTTClient_isConnected(client) == 0) {
-             printf("브로커 서버에 연결 시도\n");
+             printf("[Pub Location] 브로커 서버 연결 시도\n");
                 if (connectMQTTClient(&client) == -1) {
-                    printf("브로커 서버 연결 실패\n");
+                    printf("[Pub Location] 브로커 서버 연결 실패\n");
                     pthread_mutex_unlock(&mqttClientLock);
                     setThreadStatus(false);
                     pthread_exit(NULL);
                 } else {
-                    printf("브로커 서버 연결 성공\n");
+                    printf("[Pub Location] 브로커 서버 연결 성공\n");
                 }
         }else{
-                printf("브로커 서버에 이미 연결된 상태\n");
+                printf("[Pub Location] 브로커 서버에 이미 연결된 상태\n");
         }
 
             cJSON* root = cJSON_CreateObject();
@@ -62,7 +62,7 @@ void* pubLocationThread(void* arg) {
             MQTTClient_deliveryToken token;
             MQTTClient_publishMessage(client, LOCATIONTOPIC, &pubmsg, &token);
             MQTTClient_waitForCompletion(client, token, TIMEOUT);
-            printf("운전자 현재 위치 완료: %s\n", json_str);
+            printf("운전자 현재 위치: %s\n", json_str);
 
             pthread_mutex_unlock(&mqttClientLock); 
 
