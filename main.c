@@ -251,8 +251,8 @@ int main(int argc, char *argv[])
             timeOutStart = micros();
     
             // HRV time-domain 값들 여기서 추가 가능
-            printf("thresh: %d | sample: %d ms | Signal: %d | BPM: %d | IBI: %d ms | SDNN: %.2lf ms | RMMSSD: %.2lf ms | PNN50: %.2lf\n",
-                   thresh, sampleCounter, Signal, BPM, IBI, SDNN, RMSSD, PNN50);
+            printf("sample: %d ms | Signal: %d | BPM: %d | IBI: %d ms | SDNN: %.2lf ms | RMMSSD: %.2lf ms | PNN50: %.2lf\n",
+                  sampleCounter, Signal, BPM, IBI, SDNN, RMSSD, PNN50);
 
             pthread_mutex_lock(&data_lock);
             latest_data.timestamp = time(NULL);  // 수집 시각
@@ -442,7 +442,7 @@ void getPulse(int sig_num){
         thresh = amp / 2 + T;                  // set thresh at 50% of the amplitude
         P = thresh;                            // reset these for next time
         T = thresh;
-        printf("threshold: %d\n", thresh);
+        // printf("threshold: %d\n", thresh);
       }
 
       //비정상 (무박동) 처리

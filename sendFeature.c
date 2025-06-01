@@ -72,8 +72,6 @@ void* send_feature_thread(void* arg) {
 
     // 2. 10초마다 latest_data를 JSON으로 만들어 전송
     while (1) {
-     
-        
         fflush(stdout);  
         pthread_mutex_lock(&data_lock);
         PPGData copy = latest_data;
