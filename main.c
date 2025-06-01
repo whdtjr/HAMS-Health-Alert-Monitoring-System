@@ -373,7 +373,7 @@ void getPulse(int sig_num){
 
       //  NOW IT'S TIME TO LOOK FOR THE HEART BEAT
       // signal surges up in value every time there is a pulse
-      if (N > 250) {                             // avoid high frequency noise
+      if (N > 300) {                             // avoid high frequency noise
         if ( (Signal > thresh) && (Pulse == 0) && (N > ((IBI / 5) * 3)) ) {
           Pulse = 1;                             // set the Pulse flag when we think there is a pulse
           IBI = sampleCounter - lastBeatTime;    // measure time between beats in mS
