@@ -22,7 +22,7 @@ void print_ppg_data(void* element) {
     PPGData* data = (PPGData*) element;
     char* timestamp_str = ctime(&data->timestamp);
     if (timestamp_str[strlen(timestamp_str)-1] == '\n') timestamp_str[strlen(timestamp_str)-1] = '\0';
-//Time: %s |     timestamp_str, 
+//Time: %s | 
     printf("Signal: %d | BPM: %d | IBI: %d | SDNN: %.2lf | RMSSD: %.2lf | PNN50: %.2lf",
          data->signal, data->bpm, data->ibi, data->sdnn, data->rmssd, data->pnn50);
 }

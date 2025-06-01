@@ -48,7 +48,7 @@ bool isFatiguedByHRV(BlockingQueue* buffer){
     return false;
 
 
-    printf("[졸음 감지 후 5분동안의] SDNN: %.2f, RMSSD: %.2f, PNN50: %.2f\n", avgOfSdnn, avgOfRmssd, avgOfPnn50);
+    printf("졸음 감지 후 5분동안의 SDNN: %.2f, RMSSD: %.2f, PNN50: %.2f\n", avgOfSdnn, avgOfRmssd, avgOfPnn50);
 
     if(avgOfSdnn < 30 || avgOfRmssd < 20 || avgOfPnn50 < 0.25) {
         printf("→ 피로 상태입니다. (기준: SDNN < 30 || RMSSD < 20 || PNN50 < 0.25)\n");

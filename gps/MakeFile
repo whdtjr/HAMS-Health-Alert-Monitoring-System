@@ -4,7 +4,7 @@ CC = gcc
 CFLAGS = -Wall -I.
 LIBS = -lcjson -lpthread -lpaho-mqtt3c
 
-SRCS = main.c mqtt.c pubEmecyThread.c
+SRCS = main.c mqtt.c pubEmecyThread.c pubLocationThread.c gpsReadThread.c
 OBJS = $(SRCS:.c=.o)
 TARGET = gpsPub
 
