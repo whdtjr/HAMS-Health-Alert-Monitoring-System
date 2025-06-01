@@ -57,8 +57,8 @@ void* send_feature_thread(void* arg) {
 
 
     if (connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1) {
-        printf("connect()error");
-        perror("connect() error");
+        // printf("connect()error");
+        // perror("connect() error");
         close(sock);
         pthread_exit(NULL);
     }
