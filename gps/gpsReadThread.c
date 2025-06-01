@@ -58,7 +58,7 @@ void * gpsReadThread(void * arg){
             // 예: $GPRMC,092751.000,A,5321.6802,N,00630.3372,W,0.06,31.66,280511,,,A*45
             if (strstr(buffer, "$GPRMC")) {
                 char* token = strtok(buffer, ",");
-                printf("first token: %s\n", token);
+                // printf("first token: %s\n", token);
                 int field = 0;
                 char lat[16], lng[16], ns = 'N', ew = 'E';
 
@@ -77,8 +77,9 @@ void * gpsReadThread(void * arg){
                     printf("Latitude: %.6f, Longitude: %.6f\n", latitude, longitude);
                     if(debug){
                         if(latitude == 0.0 || longitude == 0.0){ //디버깅용
-                        latitude = 37.2778;
-                        longitude = 127.0426;
+                            latitude = 37.2778;
+                            longitude = 127.0426;
+                            printf("Latitude: %.4f, Longitude: %.4f\n", latitude, longitude);
                         }
                     }
             
