@@ -2,6 +2,7 @@
 #ifndef SHARED_DATA_H
 #define SHARED_DATA_H
 
+#include <stdbool.h>
 #include <pthread.h>
 #include "MQTTClient.h"
 

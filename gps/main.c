@@ -1,10 +1,16 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <cjson/cJSON.h>
+#include <fcntl.h> // open(), O_RDONLY 등을 위해 필요
+#include <unistd.h> // read, close, unlink 등
+#include <string.h> // strdup, memset 등
+#include <sys/stat.h>
+
 #include "MQTTClient.h"
 #include "mqtt.h"
 #include "ThreadEntry.h"
 #include "SharedData.h"
+
 
 #define PIPE_NAME "/tmp/symptom_pipe"
 
