@@ -27,7 +27,7 @@ typedef struct {
 void sumHrvValues(void* element, int index, void* ctx){
     PPGData* data = (PPGData*) element;
     HrvAccumulator* hrvAccumulator = (HrvAccumulator *) ctx;
-    printf("%d번째 데이터: sdnn-%lf, rmssd-%lf, pnn50-%lf\n", index,data ->sdnn, data->rmssd, data->pnn50 );
+    //printf("%d번째 데이터: sdnn-%lf, rmssd-%lf, pnn50-%lf\n", index,data ->sdnn, data->rmssd, data->pnn50 );
     hrvAccumulator -> sumSdnn += data ->sdnn;
     hrvAccumulator -> sumRmssd += data -> rmssd;
     hrvAccumulator -> sumPnn50 += data -> pnn50;
