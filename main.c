@@ -203,12 +203,12 @@ int main(int argc, char *argv[])
     printf("Connecting to %s:%s\n", argv[1], argv[2]);
 
     char* send_args[2] = { argv[1], argv[2] };
-    pthread_t send_thread;
-    if (pthread_create(&send_thread, NULL, send_feature_thread, send_args) != 0) {
-        perror("pthread_create failed");
-        exit(1);
-    }
-    pthread_detach(send_thread);
+    // pthread_t send_thread;
+    // if (pthread_create(&send_thread, NULL, send_feature_thread, send_args) != 0) {
+    //     perror("pthread_create failed");
+    //     exit(1);
+    // }
+    // pthread_detach(send_thread);
     
     // 초기화 함수에서 파이프 열기 (예: setup() 또는 main 루프 시작 시)
     pipe_fd = open("/tmp/signal_pipe", O_WRONLY);
@@ -276,7 +276,7 @@ int main(int argc, char *argv[])
          }
     }
 
-    pthread_join(send_thread, NULL);
+    //pthread_join(send_thread, NULL);
     return 0;
 
 }
