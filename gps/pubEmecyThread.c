@@ -29,14 +29,18 @@ void* pubEmecyThread(void* arg) {
         } else {
             printf("브로커 서버 연결 성공\n");
         }
+    }else{
+        printf("브로커 서버에 이미 연결된 상태\n");
     }
-
+    
     cJSON* root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, "devId", DEVICEID);
+    cJSON_AddStringToObject(root, "type", "emecy");
     cJSON_AddStringToObject(root, "symptom", symptom);
-    cJSON_AddNumberToObject(root, "lat", 37.123);
-    cJSON_AddNumberToObject(root, "lng", 127.456);
-
+    pthread_mutex_lock(&locationLock);
+    cJSON_AddNumberToObject(root, "lat", curLocation.lat);
+    cJSON_AddNumberToObject(root, "lng", curLocation.lng);
+    pthread_mutex_unlock(&locationLock);
     char* json_str = cJSON_PrintUnformatted(root);
     cJSON_Delete(root);
 

@@ -14,6 +14,11 @@
 #define TIMEOUT     10000L
 
 typedef struct {
+    bool running;
+    pthread_mutex_t lock;
+} ThreadStatus;
+
+typedef struct {
     double lat;
     double lng;
 } Location;
@@ -29,11 +34,17 @@ typedef struct{
     Location location;
 } DriverLocation;
 
-
+//스레드간 공유 자원//
 extern Location curLocation;
 extern pthread_mutex_t locationLock;
 
 extern MQTTClient client;
 extern pthread_mutex_t mqttClientLock;
+
+extern int remainedTime;
+extern pthread_mutex_t remainedTimeLock;
+
+extern ThreadStatus locationThreadStatus;
+//스레드간 공유 자원//
 
 #endif // SHARED_DATA_H

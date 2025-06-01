@@ -17,10 +17,12 @@
 #include "SharedData.h"
 
 #define BUF_SIZE 512
+#define PPG_BUF_SIZE 30
 
 ThreadStatus hrvStatus = {false, PTHREAD_MUTEX_INITIALIZER};
 ThreadStatus drowsyStatus = {false, PTHREAD_MUTEX_INITIALIZER};
 ThreadStatus arrhythStatus = {false, PTHREAD_MUTEX_INITIALIZER};
+BlockingQueue* ppgDataBuffer;
 
 void error_handling(const char *message) {
     perror(message);
@@ -45,6 +47,7 @@ bool try_start_thread(ThreadStatus* status, void* (*entry)(void*), CLIENT_INFO* 
 }
 
 int main(int argc, char **argv){
+    ppgDataBuffer = new_BlockingQueue(PPG_BUF_SIZE);
 
     char buffer[BUF_SIZE];
     char clientId[ID_SIZE];
