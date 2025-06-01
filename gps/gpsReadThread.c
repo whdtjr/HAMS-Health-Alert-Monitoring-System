@@ -8,7 +8,7 @@
 #include "ThreadEntry.h"
 #include "SharedData.h"
  
-#define GPS_DEVICE "/dev/ttyAMA0" //나중에 수정 serial0
+#define GPS_DEVICE "/dev/serial0" //나중에 수정 serial0
 #define BUFFER_SIZE 256
 
 int debug = 1;
@@ -24,6 +24,7 @@ double convertToDecimalDegrees(char* nmeaCoord, char quadrant) {
 }
 
 void * gpsReadThread(void * arg){
+    printf("Gps Read Thread Start\n")
     int serial_port = open(GPS_DEVICE, O_RDONLY | O_NOCTTY);
     if (serial_port < 0) {
         perror("Serial port open error");
