@@ -360,10 +360,18 @@ void getPulse(int sig_num){
       if(Signal == -1){
         fatal(0,"spi not yet initialize",0);
       }
-      if(pipe_fd != -1)
-      {
-        int signalValue = Signal;
-        write(pipe_fd, &signalValue, sizeof(int));
+      // if(pipe_fd != -1)
+      // {
+      //   int signalValue = Signal;
+      //   write(pipe_fd, &signalValue, sizeof(int));
+      // }
+
+      if (pipe_fd != -1) {
+          int signalValue = Signal;
+          ssize_t w = write(pipe_fd, &signalValue, sizeof(int));
+          if (w == -1) {
+              perror("write to pipe failed");
+          }
       }
 
       elapsedTime = thisTime - lastTime;
@@ -442,7 +450,7 @@ void getPulse(int sig_num){
         thresh = amp / 2 + T;                  // set thresh at 50% of the amplitude
         P = thresh;                            // reset these for next time
         T = thresh;
-        // printf("threshold: %d\n", thresh);
+        printf("threshold: %d\n", thresh);
       }
 
       //비정상 (무박동) 처리
