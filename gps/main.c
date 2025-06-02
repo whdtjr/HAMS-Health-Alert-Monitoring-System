@@ -78,7 +78,7 @@ int main(void){
                 }
                 pthread_mutex_unlock(&locationThreadStatus.lock);
             }
-            cJSON_Delete(root);
+            // cJSON_Delete(root);
         }
     }
 
