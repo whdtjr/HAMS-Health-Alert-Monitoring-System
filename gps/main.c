@@ -54,12 +54,12 @@ int main(void){
 
         if (bytesRead > 0) {
             buffer[bytesRead] = '\0';
-            cJSON* root = cJSON_Parse(buffer);
-            if (!root) continue;
+            // cJSON* root = cJSON_Parse(buffer);
+            // if (!root) continue;
 
-            cJSON* symptomJson = cJSON_GetObjectItem(root, "symptom");
-            if (symptomJson && cJSON_IsString(symptomJson)) {
-                char* symptomStr = strdup(symptomJson->valuestring);
+            // cJSON* symptomJson = cJSON_GetObjectItem(root, "symptom");
+            if (1) {
+                char* symptomStr = buffer;
                 //pub emecy thread 시작
                 pthread_t emecyThread;
                 pthread_create(&emecyThread, NULL, pubEmecyThread, symptomStr);
