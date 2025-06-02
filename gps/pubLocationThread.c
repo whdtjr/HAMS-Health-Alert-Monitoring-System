@@ -70,7 +70,7 @@ void* pubLocationThread(void* arg) {
             pthread_mutex_lock(&remainedTimeLock);
             remainedTime--;
             pthread_mutex_unlock(&remainedTimeLock);
-            sleep(5);// 5초마다 반복
+            sleep(10);// 5초마다 반복
    }
 
     setThreadStatus(false);
