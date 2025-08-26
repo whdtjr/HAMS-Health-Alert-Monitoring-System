@@ -1,8 +1,11 @@
  MIT License
 
 Copyright (c) 2025 JongSeok, YuHyun
+<<<<<<< HEAD
+=======
 
-     
+>>>>>>> e23d666bb3c06bce5ee42e7c3b2e78d1a405958c
+
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 
