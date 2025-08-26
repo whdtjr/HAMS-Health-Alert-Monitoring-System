@@ -45,6 +45,12 @@ In cases where arrhythmia is detected, it classifies the situation as an emergen
 
 ## Usage
 
+## Installation
+* Mediapipe version 0.8.5
+* python 3.8.0
+* bazel 3.7.2(if you want to c++ build)
+* Jetpack 4.6.6
+
 ## Improvement
 we started to detect drowsiness with not only mediapipe landmark analysis but also Transformer + 1D convolution model to raise detecting accuarcy
 
