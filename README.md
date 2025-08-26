@@ -26,14 +26,19 @@ In cases where arrhythmia is detected, it classifies the situation as an emergen
 
 <img width="353" height="335" alt="Image" src="https://github.com/user-attachments/assets/f915e30d-eab1-4d76-8097-436eb2040182" />
 
+## Features
+* Drowsiness detection using camera and Transformer-based model
+* real-time communication with AI-assistant(Llama + STT/TTS)
+* Automatic emergency reporting with GPS location
+* Arrhythmia detection using PPG sensor and scikit-learn
 ## Framework and AI model
-**Mediapipe for face landmark**
+* **Mediapipe for face landmark**
 
-**scikit-learn for arrhymia detecting**
+* **scikit-learn for arrhymia detecting**
 
-**pytorch for detecting Drowsiness**
+* **pytorch for detecting Drowsiness**
 
-**Llama to communicate with user**
+* **Llama to communicate with user**
 
 ## API
 **Google STT, TTS API**
