@@ -53,7 +53,6 @@ absl::Status RunMPPGraph() {
         return absl::UnavailableError("Failed to open video file.");
     }
 
-    // FPS 계산을 위한 타임스탬프 설정
     double fps = capture.get(cv::CAP_PROP_FPS);
     if (fps <= 0) fps = 30.0;
     int64_t frame_timestamp_us = 0;
@@ -76,7 +75,7 @@ absl::Status RunMPPGraph() {
 
         auto gpu_buffer = gpu_helper.CreateSourceTexture(*input_frame);
 
-        // ✅ ConvertToGpuBuffer 제거, 바로 move로 넘김
+        // ConvertToGpuBuffer 제거, 바로 move로 넘김
         auto input_packet = mediapipe::MakePacket<mediapipe::GpuBuffer>(
             std::move(gpu_buffer)).At(mediapipe::Timestamp(frame_timestamp_us));
 
