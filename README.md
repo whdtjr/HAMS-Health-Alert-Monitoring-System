@@ -41,6 +41,6 @@ In cases where arrhythmia is detected, it classifies the situation as an emergen
 ## Usage
 
 ## Improvement
-we started to detect drowsiness with not only mediapipe landmark analysis but also Transformer model to raise detecting accuarcy
+we started to detect drowsiness with not only mediapipe landmark analysis but also Transformer + 1D convolution model to raise detecting accuarcy
 
 
