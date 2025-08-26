@@ -67,7 +67,6 @@ class DrowsinessDataProcessor:
         )
         return X_tr, X_val, y_tr, y_val
 
-# ---------------------------- GPU 최적화된 Dataset ---------------------------- #
 class DrowsinessDataset(Dataset):
     def __init__(self, X, y, device=None):
         # 데이터를 미리 GPU로 옮기지 않고 필요할 때 이동
@@ -83,7 +82,6 @@ class DrowsinessDataset(Dataset):
         y = torch.tensor(self.y[idx], dtype=torch.long)
         return x, y
 
-# ---------------------------- GPU 최적화된 모델 ---------------------------- #
 class Conv1DLSTM(nn.Module):
     def __init__(self, num_features, conv_channels=64, kernel_size=3,
                  lstm_units=128, dropout=0.3, num_classes=2):
@@ -113,7 +111,7 @@ class Conv1DLSTM(nn.Module):
             hidden_size=lstm_units,
             batch_first=True, 
             dropout=dropout if dropout > 0 else 0,
-            num_layers=1  # 레이어 수 고정
+            num_layers=1 
         )
         
         self.classifier = nn.Sequential(
@@ -136,9 +134,8 @@ class Conv1DLSTM(nn.Module):
         logits = self.classifier(lstm_out[:, -1, :])
         return logits
 
-# --------------------------- GPU 최적화된 학습 함수 --------------------------- #
+
 def get_optimal_batch_size(model, device, sample_input_shape):
-    """GPU 메모리에 맞는 최적 배치 크기 찾기"""
     model.eval()
     batch_sizes = [64, 32, 16, 8, 4]
     
@@ -160,13 +157,12 @@ def get_optimal_batch_size(model, device, sample_input_shape):
     return 4  # 최소 배치 크기
 
 def clear_memory():
-    """메모리 정리"""
     gc.collect()
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
 def train_pytorch_model_optimized(seq_len=50, epochs=100, batch_size=None, lr=1e-3):
-    # GPU 설정
+
     if not torch.cuda.is_available():
         print("Warning: CUDA not available, using CPU")
         device = torch.device('cpu')
@@ -187,10 +183,8 @@ def train_pytorch_model_optimized(seq_len=50, epochs=100, batch_size=None, lr=1e
         print("Error: Preprocessed data files not found.")
         return
 
-    # 모델 초기화
     model = Conv1DLSTM(num_features=X_tr.shape[2]).to(device)
     
-    # 최적 배치 크기 찾기 (지정되지 않은 경우)
     if batch_size is None:
         batch_size = get_optimal_batch_size(model, device, X_tr.shape)
     
@@ -305,12 +299,10 @@ def train_pytorch_model_optimized(seq_len=50, epochs=100, batch_size=None, lr=1e
         vl_acc = 100 * vl_correct / vl_total
         scheduler.step(vl_loss)
 
-        # 최고 성능 모델 저장
         if vl_acc > best_val_acc:
             best_val_acc = vl_acc
             torch.save(model.state_dict(), 'best_drowsiness_model.pth')
 
-        # GPU 메모리 상태 출력
         if device.type == 'cuda':
             gpu_memory = torch.cuda.memory_allocated() / 1024**3
             print(f'Epoch {ep:03d} | '
@@ -322,7 +314,6 @@ def train_pytorch_model_optimized(seq_len=50, epochs=100, batch_size=None, lr=1e
                   f'Train Loss {tr_loss/len(train_loader):.4f} Acc {tr_acc:.2f}% || '
                   f'Val Loss {vl_loss/len(val_loader):.4f} Acc {vl_acc:.2f}%')
         
-        # 주기적 메모리 정리
         if ep % 10 == 0:
             clear_memory()
 
@@ -349,19 +340,16 @@ if __name__ == '__main__':
     dataset_path = './sequence'
     seq_len = 50
     
-    # GPU 정보 출력
     if torch.cuda.is_available():
         print(f"CUDA Version: {torch.version.cuda}")
         print(f"PyTorch Version: {torch.__version__}")
         print(f"Available GPUs: {torch.cuda.device_count()}")
         for i in range(torch.cuda.device_count()):
             print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
-    
-    # 1. 전처리 및 저장 (필요한 경우만)
+
     if not all(os.path.exists(f) for f in ['X_train.npy', 'X_val.npy', 'y_train.npy', 'y_val.npy']):
         preprocess_and_save(data_dir=dataset_path, seq_len=seq_len)
     
-    # 2. GPU 최적화된 학습 시작
     train_pytorch_model_optimized(
         seq_len=seq_len,
         epochs=100,
