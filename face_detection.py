@@ -266,13 +266,12 @@ def draw_landmarks(image, landmarks):
 
     if len(landmark_point) > 0:
 
-        왼 눈썹(55：内側、46：外側)
+
         cv.line(image, landmark_point[55], landmark_point[65], (0, 255, 0), 2)
         cv.line(image, landmark_point[65], landmark_point[52], (0, 255, 0), 2)
         cv.line(image, landmark_point[52], landmark_point[53], (0, 255, 0), 2)
         cv.line(image, landmark_point[53], landmark_point[46], (0, 255, 0), 2)
 
-        오른 눈썹(285：内側、276：外側)
         cv.line(image, landmark_point[285], landmark_point[295], (0, 255, 0),
                 2)
         cv.line(image, landmark_point[295], landmark_point[282], (0, 255, 0),
@@ -282,7 +281,6 @@ def draw_landmarks(image, landmarks):
         cv.line(image, landmark_point[283], landmark_point[276], (0, 255, 0),
                 2)
 
-        # 왼 눈 (133：눈 머리、246：눈 꼬리)
         cv.circle(image, landmark_point[133], 2, (0, 255, 0), 2) 
         cv.circle(image, landmark_point[173], 2, (0, 255, 0), 2)
         cv.circle(image, landmark_point[157], 2, (0, 255, 0), 2)
@@ -299,7 +297,6 @@ def draw_landmarks(image, landmarks):
         cv.circle(image, landmark_point[154], 2, (0, 255, 0), 2)
         cv.circle(image, landmark_point[155], 2, (0, 255, 0), 2)
 
-        # 오른 눈 (362：눈 머리、466：눈 꼬리)
         cv.circle(image, landmark_point[362], 2, (0, 255, 0), 2)
         cv.circle(image, landmark_point[398], 2, (0, 255, 0), 2)
         cv.circle(image, landmark_point[384], 2, (0, 255, 0), 2)
@@ -315,8 +312,7 @@ def draw_landmarks(image, landmarks):
         cv.circle(image, landmark_point[380], 2, (0, 255, 0), 2)
         cv.circle(image, landmark_point[381], 2, (0, 255, 0), 2)
         cv.circle(image, landmark_point[382], 2, (0, 255, 0), 2)
-
-        # 입 308 오른쪽 끝
+        
         cv.circle(image, landmark_point[308], 2, (0, 255, 0),
                 2)
         cv.circle(image, landmark_point[415], 2, (0, 255, 0),
