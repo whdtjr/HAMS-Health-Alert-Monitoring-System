@@ -24,6 +24,7 @@ In cases where arrhythmia is detected, it classifies the situation as an emergen
 
 **PPG sensor,Camera,Mike,speaker**
 
+<img width="353" height="335" alt="Image" src="https://github.com/user-attachments/assets/f915e30d-eab1-4d76-8097-436eb2040182" />
 
 ## Framework and AI model
 **Mediapipe for face landmark**
