@@ -55,4 +55,4 @@
 기존의 Mediapipe 랜드마크 분석뿐 아니라 Transformer + 1D Convolution 모델을 적용하여 졸음 감지 정확도를 높였습니다.
 
 ## poster
-<img width="538" height="721" alt="Image" src="https://github.com/user-attachments/assets/90302783-6614-4e7b-a14f-f820b7afcc26" />
+<img width="680" height="917" alt="Image" src="https://github.com/user-attachments/assets/d800c5d3-c783-4ffa-a639-af57e582ff3d" />
