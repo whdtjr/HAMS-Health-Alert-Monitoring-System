@@ -45,8 +45,6 @@
 ## API
 **Google STT, TTS API**
 
-## 사용 방법
-
 ## 설치 환경
 * Mediapipe 0.8.5
 * python 3.8.0
@@ -56,4 +54,5 @@
 ## 개선 사항
 기존의 Mediapipe 랜드마크 분석뿐 아니라 Transformer + 1D Convolution 모델을 적용하여 졸음 감지 정확도를 높였습니다.
 
-
+## poster
+<img width="538" height="721" alt="Image" src="https://github.com/user-attachments/assets/90302783-6614-4e7b-a14f-f820b7afcc26" />
