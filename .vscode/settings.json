@@ -1,0 +1,22 @@
+{
+    "files.associations": {
+        "*.dbclient-js": "javascript",
+        "*.sqlbook": "sql",
+        "*.ndjson": "jsonl",
+        "blockingqueue.h": "c",
+        "stdlib.h": "c",
+        "ppgdata.h": "c",
+        "time.h": "c",
+        "inet.h": "c",
+        "stdio.h": "c",
+        "stdbool.h": "c",
+        "threadentry.h": "c",
+        "sharedata.h": "c",
+        "shareddata.h": "c",
+        "string.h": "c",
+        "mqtt.h": "c",
+        "pthread.h": "c",
+        "clientinfo.h": "c",
+        "types.h": "c"
+    }
+}
