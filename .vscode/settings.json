@@ -3,6 +3,7 @@
         "*.dbclient-js": "javascript",
         "*.sqlbook": "sql",
         "*.ndjson": "jsonl",
+<<<<<<< HEAD
         "blockingqueue.h": "c",
         "stdlib.h": "c",
         "ppgdata.h": "c",
@@ -20,3 +21,16 @@
         "types.h": "c"
     }
 }
+=======
+        "spi_reader.h": "c",
+        "math.h": "c",
+        "stdio.h": "c",
+        "stdlib.h": "c",
+        "pthread.h": "c",
+        "stat.h": "c",
+        "fcntl.h": "c",
+        "inet.h": "c",
+        "ppgdata.h": "c"
+    }
+}
+>>>>>>> origin/ppgModule
