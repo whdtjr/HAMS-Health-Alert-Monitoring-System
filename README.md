@@ -37,6 +37,7 @@
 * **Mediapipe: 얼굴 랜드마크 감지**
 
 * **scikit-learn: 부정맥 감지**
+ [부정맥 감지 정리](https://scratched-vise-e9a.notion.site/learning-PPG-data-1d60a75193b480e19feed34ca9d18802?source=copy_link)
 
 * **PyTorch: 졸음 감지**
 
