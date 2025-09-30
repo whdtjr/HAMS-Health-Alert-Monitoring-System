@@ -35,6 +35,7 @@
 * PPG 센서와 scikit-learn을 이용한 부정맥 감지
 ## 프레임워크 및 AI 모델
 * **Mediapipe: 얼굴 랜드마크 감지**
+* [Mediapipe 얼굴 랜드마크 안내](https://scratched-vise-e9a.notion.site/jetson-nano-mediapipe-1cc0a75193b4801a90c3c36095b19cbb?source=copy_link)
 
 * **scikit-learn: 부정맥 감지**
  [부정맥 감지 정리](https://scratched-vise-e9a.notion.site/learning-PPG-data-1d60a75193b480e19feed34ca9d18802?source=copy_link)
