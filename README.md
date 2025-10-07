@@ -20,7 +20,8 @@ PPG data 및 HRV 값들을 샘플링 및 도출하고 latest_data를 소켓을 �
 
 주요 global variable:
 - `QS` : 박동이 감지되었음을 나타내는 플래그 (1이면 감지)
-
+-  `rate[10]` : 최근 10개의 IBI 값이 저장되는 배열
+  
 주요 function:
 - `main`
   - 소켓 송신 스레드 (소켓을 이용해 latest_data를 외부 프로세스에게 보내는 스레드) 생성
