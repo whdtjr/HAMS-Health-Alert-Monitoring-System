@@ -233,23 +233,17 @@
  }
 
  bool BlockingQueue_enq_with_overwrite(BlockingQueue* this, void* element) {
-    if (!element) return false;
-    if(BlockingQueue_size(this) == this -> max_size){
-        if (sem_wait(&this->full_slots)) { cleanup_exit(this, "Error: sem_wait() failed for full_slots semaphore");}
-        if (pthread_mutex_lock(&this->mutex)) { cleanup_exit(this, "Error: pthread_mutex_lock() failed");}
-        void *discarded = Queue_deq(this->queue);
-        free(discarded);
-        bool success = Queue_enq(this->queue, element);
-        if (pthread_mutex_unlock(&this->mutex)) { cleanup_exit(this, "Error: pthread_mutex_unlock() failed");}
-        if (sem_post(&this->full_slots)) { cleanup_exit(this, "Error: sem_post() failed for full_slots semaphore");}
- 
-        return success;
+        if (!element) return false;
 
-    }else{
-       bool success =  BlockingQueue_enq(this, element);
-       return success;
-    }
- }
+        // 큐가 가득 찼으면 하나 버림
+        if (BlockingQueue_size(this) == this->max_size) {
+            void *discarded = BlockingQueue_deq(this); // full--, empty++
+            free(discarded);
+        }
+
+        // 항상 enq 발생
+        return BlockingQueue_enq(this, element); // empty--, full++
+  }
 
 void BlockingQueue_print(BlockingQueue* this, void (*print_func)(void*)){
   /** Locks the mutex to ensure thread safety.*/
