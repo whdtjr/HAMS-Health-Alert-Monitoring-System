@@ -49,3 +49,46 @@
     - 피로 판단 기준은 SDNN, RMSSD, PNN50에 대한 의학적 임계값을 참고하였습니다.
 - HRV 기반 판단 결과가 피로 상태이거나 영상 분석을 통한 졸음 신호가 3회 연속 발생한 경우 최종 졸음 상태로 판단하여 졸음 모드 대응 프로세스를 활성화합니다.
     - 다른 프로세스에게 활성화 신호만 전달하면 되므로 서로 무관한 프로세스끼리의 간단한 단방향 로컬 IPC인 named pipe를 사용해 전달합니다.
+
+## BlockingQueue.c
+- 고정 크기의 Blocking Queue를 구현한 모듈로 Producer–Consumer 구조에서 thread-safe한 enqueue/dequeue를 제공합니다.
+- 세마포어를 통해 큐의 상태(빈 슬롯/채워진 슬롯)에 따른 흐름을 제어하고 뮤텍스를 통해 내부 Queue 자료구조에 대한 동시 접근을 보호합니다.
+- 주요 함수들
+    - BlockingQueue* **new_BlockingQueue**(int max_size)
+        - BlockingQueue 구조체를 위한 메모리를 할당하고 각 멤버변수들을 초기화한 후 BlockingQueue 구조체의 포인터를 리턴하는 함수
+        - 중간에 실패할 시 NULL 리턴
+    - bool **BlockingQueue_enq**(BlockingQueue* this, void* element)
+        - 인수로 받은 element를 Queue의 맨뒤에 Enqueue 하는 함수
+            - element가 NULL이면 false를 리턴하고 Enqueue가 성공했으면 true를 리턴.
+        - Queue가 꽉 찼다면 Queue안에 공간이 날때까지 호출한 thread를 block함.
+        - sem_wait()를 통해 Blocking queue에 empty slot이 날때까지 이 함수를 호출한 thread를 block 시킬 수 있음
+            - empty slot이 있으면 → 원자적으로 감소시키고 바로 통과
+        - empty slot이 있다면 뮤텍스를 lock하고 Queue에 enqueue 후 뮤텍스를 다시 unlock
+        - sem_post()를 이용해 full_slots이 하나 늘어났음을 알려줌
+            - 원자적으로 증가시키기 때문에 다른 thread에서 영향을 받아 block이 풀릴 수 있음
+    - void* **BlockingQueue_deq**(BlockingQueue* this)
+        - Queue의 맨 앞에서 element를 dequeue하는 함수
+        - dequeue된 element의 포인터를 리턴
+        - Queue가 비었다면 element가 dequeue될 수 있을 때까지 호출한 thread를 block함
+        - sem_wait()를 통해 Blocking queue에 full slot이 날때까지 이 함수를 호출한 thread를 block 시킬 수 있음
+            - full slot이 있으면 → 원자적으로 감소시키고 바로 통과
+        - full slot이 있다면 뮤텍스를 lock하고 Queue에서 dequeue 후 뮤텍스를 다시 unlock
+        - sem_post()를 이용해 empty_slots이 하나 늘어났음을 알려줌
+            - 원자적으로 증가시키기 때문에 다른 thread에서 영향을 받아 block이 풀릴 수 있음
+    - bool **BlockingQueue_enq_with_overwrite**(BlockingQueue* this, void* element)
+        - 큐가 가득차지 않았다면 BlockingQueue_enq()를  바로 실행하고 큐가 가득찼을 경우엔 BlockingQueue_deq()후에 BlockingQueue_enq()를 실행하는 함수
+        - 큐가 꽉 찼을때도 해당 thread가 block될 필요 없이 알아서 dequeue하고 enqueue하면 될 때 사용
+    - void **BlockingQueue_forEach**(BlockingQueue* this, void (*callback)(void*, int, void*), void* ctx)
+        - BlockingQueue에 저장된 모든 원소를 순회하면서 사용자 측에서 전달한 callback 함수를 각 원소에 대해 실행하는 함수
+        - 순회 중에는 내부 mutex를 lock하여 콜백 실행 동안 큐의 구조가 변경되지 않도록 thread-safety를 보장.
+        - callback 함수는 다음과 같은 인자를 전달받는다:
+            - 첫 번째 인자: Queue에 저장된 원소 객체 (void*)
+            - 두 번째 인자: 순회 중인 원소의 인덱스
+            - 세 번째 인자: 사용자 측에서 전달한 컨텍스트 객체 (ctx)
+                - ctx를 통해 콜백 실행 시 필요한 외부 상태를 전달할 수 있으며 이를 통해 전역 변수 없이 유연한 콜백 구현이 가능하다.
+    - void **BlockingQueue_print**(BlockingQueue* this, void (*print_func)(void*))
+        - BlockingQueue에 저장된 모든 원소를 순회하면서 사용자 측에서 전달한 print_func 콜백을 각 원소에 대해서 실행하는 함수
+        - 순회 중에는 내부 mutex를 lock하여 콜백 실행 동안 큐의 구조가 변경되지 않도록 thread-safety를 보장.
+        - 실제 출력 형식은 print_func 콜백에 위임함으로써 BlockingQueue는 데이터 타입이나 출력 방식에 의존하지 않도록 설계되었다.
+        - print_func 함수는 다음과 같은 인자를 전달받는다.
+            - 첫번째 인자: Queue에 저장된 원소 객체 (void*)
