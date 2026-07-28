@@ -1,0 +1,4 @@
+/build/
+/*.exe
+/hams_assessment_server
+/hams_core_tests_linux

@@ -1,94 +1,141 @@
-# Assement process 
-## 전체 구조
+# HAMS Assessment Server — Modern C++ Refactoring
 
-![KakaoTalk_Photo_2026-03-14-16-54-51-2](https://github.com/user-attachments/assets/20b8a17a-cb0d-42ae-8f2b-22e3d6fc6295)
+기존 POSIX C 기반 HAMS 건강 상태 판정 서버의 동작을 Modern C++20으로
+재설계한 프로젝트입니다. 단순 문법 변환이 아니라 객체의 책임과 수명을
+명확히 분리하고, 새로운 클라이언트·판정 규칙·알림 채널을 기존 코드 수정
+없이 추가할 수 있는 구조를 목표로 합니다.
 
-- 멀티 스레드 구조의 프로세스로 HRV 데이터 수신, 졸음 판단, 부정맥 판단을 병렬적으로 수행합니다.
-- HRV 수신과 상태 판단 로직은 서로 독립적으로 수행될 필요가 있으므로 pthread 기반 멀티 스레드 구조로 분리하여 실시간성과 응답성을 높였습니다.
-- 분산 시스템의 서버 역할을 하며 listen–accept 기반의 멀티 클라이언트 TCP 구조로 구현하여 여러 클라이언트의 연결 요청을 수용하고 초기 식별 정보를 바탕으로 필요한 기능 스레드를 분기 실행하도록 설계하였습니다.
-- 최근 5분간의 HRV 데이터를 thread-safe한 공유 버퍼에 저장하기 위해 BlockingQueue를 사용하였습니다.
-    - Blocking queue는 세마포어를 통해 큐의 상태(빈 슬롯/채워진 슬롯)에 따른 흐름을 제어하고 뮤텍스를 통해 내부 Queue 자료구조에 대한 동시 접근을 보호합나다.
-    - 현재 구조에서는 단일 스레드만 enqueue와 dequeue를 수행하므로 세마포어의 활용도가 크지는 않지만 향후 데이터 생산 또는 소비 스레드가 추가될 경우에도 안정적으로 동작할 수 있도록 해당 구조를 유지하였습니다. 반면 공유 버퍼에 접근하는 스레드는 여러 개이므로 뮤텍스를 통한 race condition 방지는 의미 있는 동기화 역할을 수행합니다.
-    - 졸음 판단을 위해 버퍼에 저장된 HRV 데이터를 순회하며 대표값을 계산해야 합니다. 이때 drowsiness 스레드가 내부 Queue 자료구조를 직접 순회하면 캡슐화가 깨질 수 있으므로 사용자 측에서 콜백 함수와 컨텍스트 객체를 전달하면 BlockingQueue 내부에서 안전하게 순회하도록 하는 BlockingQueue_forEach() 함수를 구현하였습니다.
-    - 또한 버퍼가 가득 찬 경우 스레드를 block시키는 대신 가장 오래된 데이터를 제거하고 최신 데이터를 저장하는 overwrite 정책을 적용하였습니다. 이를 위해 BlockingQueue_enq_with_overwrite() 함수를 구현하여 큐가 가득 찬 경우 자동으로 dequeue 후 enqueue가 수행되도록 하였습니다.
-- 통신 프로토콜로 TCP를 사용하여 HRV와 같은 시계열 생체 데이터의 순서 보장과 신뢰성 있는 전달이 가능하도록 하였습니다.
-- 클라이언트가 전송하는 초기 정보와 HRV 데이터는 cJSON 라이브러리를 사용해 JSON 형식으로 구성하여 기능 식별 및 데이터 필드 확장이 용이하도록 하였습니다.
-- 각 스레드에서 졸음 및 부정맥 판단을 하게 되면 대응 프로세스에게 활성화 신호를 전달하기 위해 서로 무관한 프로세스끼리의 간단한 단방향 로컬 IPC인 named pipe를 사용해 전달합니다.
+## 주요 설계
 
-## main.c
-- 최근 PPG 데이터를 저장하기 위한 공유 버퍼로 BlockingQueue 객체를 생성합니다.
-- new_BlockingQueue(PPG_BUF_SIZE)를 통해 크기 30의 PPG 데이터 버퍼를 생성합니다.
-    - 최근 약 5분간의 PPG 데이터를 유지하는 것이 목표이며 PPG 데이터는 약 10초 주기로 수신되므로 이를 기준으로 버퍼 크기를 30으로 설정하였습니다.
-- PPG 데이터의 삽입과 조회는 각각 다른 스레드에서 수행되며 BlockingQueue를 통해 producer–consumer 구조를 구성함으로써 데이터 동기화 및 흐름 제어를 main 로직과 분리하였습니다.
-- 본 프로그램은 TCP 기반 서버로 동작하며 서버 소켓을 생성한 후 다수의 클라이언트 연결 요청을 대기합니다.
-    - 클라이언트가 연결되면 초기 데이터(JSON)를 수신하여 클라이언트의 ID를 식별하고 해당 ID에 대응하는 기능 스레드를 생성합니다. 동일 기능 스레드가 이미 실행 중일 경우에는 중복 실행을 방지합니다.
-    - 본 시스템은 여러 기능 클라이언트(HRV, 졸음 판단, 부정맥 판단 등)로부터 데이터를 수신하는 중앙 제어 구조입니다. 따라서 서버는 다수의 클라이언트 연결을 처리할 수 있어야 하므로 이를 위해 서버 소켓을 listen 상태로 두고 backlog 값을 5로 설정하여 동시에 여러 연결 요청을 큐에 대기시킬 수 있도록 구성하였습니다. 연결 수락 후에는 클라이언트 ID를 기반으로 기능을 분기 처리하는 multi-client 구조로 설계하였습니다.
-- 클라이언트 연결 후 수신된 ID에 따라 해당 기능 스레드를 생성하는 multi-thread 구조로 설계하였습니다.
-    - HRV 데이터 수신은 지속적으로 수행되어야 하고 졸음 판단 및 부정맥 판단 로직은 독립적으로 병렬 수행될 필요가 있으므로 이를 위해 POSIX Thread(pthread) 라이브러리를 사용하여 각 기능을 개별 스레드로 분리하였습니다.
-    - 또한 동일 기능 스레드의 중복 생성을 방지하기 위해 ThreadStatus 구조체와 mutex 기반 동기화 메커니즘을 도입하였습니다.
+```mermaid
+classDiagram
+    class AssessmentServer {
+        +run()
+    }
 
-## hrvReceiverThread.c
-- HRV 데이터를 송신하는 client의 시작 메시지에 의해 생성되는 스레드입니다.
-- 스레드가 시작된 이후에는 TCP 소켓을 통해 HRV 데이터를 지속적으로 수신하며 수신된 데이터는 PPG 데이터 버퍼에 저장됩니다.
-    - HRV 데이터는 시간 순서에 따라 분석되는 생체 신호이므로 데이터의 순서 보장과 손실 방지가 중요해 비연결형 프로토콜인 UDP 대신 전송 순서와 신뢰성을 보장하는 TCP 소켓 기반 통신을 사용하였습니다.
-    - HRV 데이터의 필드가 많기 때문에 가독성과 유지보수 및 확장에 용이한 JSON 구조를 사용하였습니다. 수신한 문자열은 cJSON 라이브러리를 사용하여 구조체 형태로 파싱합니다.
-- PPG 데이터 버퍼는 최근 데이터만 유지하면 되므로 버퍼가 가득 찼을 경우에도 스레드가 block 될 필요 없이 가장 오래된 데이터를 제거하고 최신 데이터를 삽입하는 overwrite 방식을 사용합니다.
-    - 이를 위해 BlockingQueue_enq_with_overwrite() 함수를 사용하여 BlockingQueue에 데이터를 삽입합니다.
-    - 내부적으로 mutex를 사용하므로 여러 스레드에서 접근하더라도 thread-safe하게 enqueue가 가능합니다.
-    - 현재는 enqueue를 수행하는 스레드가 하나뿐이므로 동시 enqueue 경쟁은 발생하지 않지만 세마포어를 통한 큐 상태 관리 구조는 유지되어 향후 producer 스레드가 추가될 경우에도 확장 가능합니다.
-- HRV 데이터의 수신 및 저장 상태를 확인하기 위해 BlockingQueue_print() 함수를 사용하여 디버깅 로그를 출력합니다.
-    - 출력 형식은 사용자 정의 print_ppg_data 콜백으로 분리하여 PPG 데이터 버퍼에 저장된 모든 원소를 가독성 있게 확인할 수 있도록 구성하였습니다.
-      
-## drowsinessAssessmentThread.c
-- 메인 스레드가 카메라 영상 분석을 통해 졸음을 감지한 client가 보낸 메시지를 받고 생성하는 스레드입니다.
-- 해당 스레드가 시작됐다는건 영상 기반에서 졸음으로 판단됐다는 뜻이므로 바로 PPG 데이터 버퍼에 저장되어 있던 최근 약 5분간의 HRV 데이터를 기반으로 최종 졸음 상태를 판단합니다.
-- HRV 데이터는 BlockingQueue에 저장되어 있으며 버퍼에 저장된 모든 원소를 순회하여 평균값을 계산해야 하므로 BlockingQueue_forEach() 함수를 사용합니다.
-    - 각 HRV 데이터의 값을 누적하기 위해 누적용 컨텍스트 객체(HrvAccumulator)와 함께 HRV 값을 더하는 콜백 함수를 전달합니다.
-    - BlockingQueue_forEach()는 내부적으로 mutex를 사용하므로 순회 중 큐의 구조가 변경되지 않도록 thread-safe하게 처리됩니다.
-- 누적된 HRV 값으로 SDNN, RMSSD, PNN50의 평균을 계산하고 해당 평균값을 기준으로 HRV 기반 피로 상태를 판단합니다.
-    - 피로 판단 기준은 SDNN, RMSSD, PNN50에 대한 의학적 임계값을 참고하였습니다.
-- HRV 기반 판단 결과가 피로 상태이거나 영상 분석을 통한 졸음 신호가 3회 연속 발생한 경우 최종 졸음 상태로 판단하여 졸음 모드 대응 프로세스를 활성화합니다.
-    - 다른 프로세스에게 활성화 신호만 전달하면 되므로 서로 무관한 프로세스끼리의 간단한 단방향 로컬 IPC인 named pipe를 사용해 전달합니다.
+    class ClientHandlerFactory {
+        +registerHandler(type, creator)
+        +create(type, session) unique_ptr~ClientHandler~
+    }
 
-## BlockingQueue.c
-- 고정 크기의 Blocking Queue를 구현한 모듈로 Producer–Consumer 구조에서 thread-safe한 enqueue/dequeue를 제공합니다.
-- 세마포어를 통해 큐의 상태(빈 슬롯/채워진 슬롯)에 따른 흐름을 제어하고 뮤텍스를 통해 내부 Queue 자료구조에 대한 동시 접근을 보호합니다.
-- 주요 함수들
-    - BlockingQueue* **new_BlockingQueue**(int max_size)
-        - BlockingQueue 구조체를 위한 메모리를 할당하고 각 멤버변수들을 초기화한 후 BlockingQueue 구조체의 포인터를 리턴하는 함수
-        - 중간에 실패할 시 NULL 리턴
-    - bool **BlockingQueue_enq**(BlockingQueue* this, void* element)
-        - 인수로 받은 element를 Queue의 맨뒤에 Enqueue 하는 함수
-            - element가 NULL이면 false를 리턴하고 Enqueue가 성공했으면 true를 리턴.
-        - Queue가 꽉 찼다면 Queue안에 공간이 날때까지 호출한 thread를 block함.
-        - sem_wait()를 통해 Blocking queue에 empty slot이 날때까지 이 함수를 호출한 thread를 block 시킬 수 있음
-            - empty slot이 있으면 → 원자적으로 감소시키고 바로 통과
-        - empty slot이 있다면 뮤텍스를 lock하고 Queue에 enqueue 후 뮤텍스를 다시 unlock
-        - sem_post()를 이용해 full_slots이 하나 늘어났음을 알려줌
-            - 원자적으로 증가시키기 때문에 다른 thread에서 영향을 받아 block이 풀릴 수 있음
-    - void* **BlockingQueue_deq**(BlockingQueue* this)
-        - Queue의 맨 앞에서 element를 dequeue하는 함수
-        - dequeue된 element의 포인터를 리턴
-        - Queue가 비었다면 element가 dequeue될 수 있을 때까지 호출한 thread를 block함
-        - sem_wait()를 통해 Blocking queue에 full slot이 날때까지 이 함수를 호출한 thread를 block 시킬 수 있음
-            - full slot이 있으면 → 원자적으로 감소시키고 바로 통과
-        - full slot이 있다면 뮤텍스를 lock하고 Queue에서 dequeue 후 뮤텍스를 다시 unlock
-        - sem_post()를 이용해 empty_slots이 하나 늘어났음을 알려줌
-            - 원자적으로 증가시키기 때문에 다른 thread에서 영향을 받아 block이 풀릴 수 있음
-    - bool **BlockingQueue_enq_with_overwrite**(BlockingQueue* this, void* element)
-        - 큐가 가득차지 않았다면 BlockingQueue_enq()를  바로 실행하고 큐가 가득찼을 경우엔 BlockingQueue_deq()후에 BlockingQueue_enq()를 실행하는 함수
-        - 큐가 꽉 찼을때도 해당 thread가 block될 필요 없이 알아서 dequeue하고 enqueue하면 될 때 사용
-    - void **BlockingQueue_forEach**(BlockingQueue* this, void (*callback)(void*, int, void*), void* ctx)
-        - BlockingQueue에 저장된 모든 원소를 순회하면서 사용자 측에서 전달한 callback 함수를 각 원소에 대해 실행하는 함수
-        - 순회 중에는 내부 mutex를 lock하여 콜백 실행 동안 큐의 구조가 변경되지 않도록 thread-safety를 보장.
-        - callback 함수는 다음과 같은 인자를 전달받는다:
-            - 첫 번째 인자: Queue에 저장된 원소 객체 (void*)
-            - 두 번째 인자: 순회 중인 원소의 인덱스
-            - 세 번째 인자: 사용자 측에서 전달한 컨텍스트 객체 (ctx)
-                - ctx를 통해 콜백 실행 시 필요한 외부 상태를 전달할 수 있으며 이를 통해 전역 변수 없이 유연한 콜백 구현이 가능하다.
-    - void **BlockingQueue_print**(BlockingQueue* this, void (*print_func)(void*))
-        - BlockingQueue에 저장된 모든 원소를 순회하면서 사용자 측에서 전달한 print_func 콜백을 각 원소에 대해서 실행하는 함수
-        - 순회 중에는 내부 mutex를 lock하여 콜백 실행 동안 큐의 구조가 변경되지 않도록 thread-safety를 보장.
-        - 실제 출력 형식은 print_func 콜백에 위임함으로써 BlockingQueue는 데이터 타입이나 출력 방식에 의존하지 않도록 설계되었다.
-        - print_func 함수는 다음과 같은 인자를 전달받는다.
-            - 첫번째 인자: Queue에 저장된 원소 객체 (void*)
+    class ClientHandler {
+        <<interface>>
+        +handle()*
+    }
+
+    class HrvHandler
+    class DrowsinessHandler
+    class ArrhythmiaHandler
+
+    AssessmentServer --> ClientHandlerFactory
+    ClientHandlerFactory ..> ClientHandler : creates
+    ClientHandler <|-- HrvHandler
+    ClientHandler <|-- DrowsinessHandler
+    ClientHandler <|-- ArrhythmiaHandler
+```
+
+`AssessmentServer`는 구체적인 클라이언트 처리 클래스를 알지 못합니다.
+초기 JSON의 `id`를 읽은 뒤 `ClientHandlerFactory`에 생성을 요청하고,
+반환된 `ClientHandler`의 가상 함수 `handle()`만 호출합니다.
+
+```mermaid
+classDiagram
+    class DrowsinessAssessor {
+        +addRule(rule)
+        +onCameraDetection() bool
+    }
+
+    class AssessmentRule {
+        <<interface>>
+        +matches(context)* bool
+    }
+
+    class HrvFatigueRule
+    class ConsecutiveDetectionRule
+
+    DrowsinessAssessor o-- AssessmentRule
+    AssessmentRule <|-- HrvFatigueRule
+    AssessmentRule <|-- ConsecutiveDetectionRule
+```
+
+졸음 판정 규칙은 Strategy와 Composite 구조로 구성됩니다. 기본 설정은
+다음 중 하나라도 참이면 졸음으로 판단합니다.
+
+- 최근 HRV 평균이 `SDNN < 30`, `RMSSD < 20`, `PNN50 < 0.25` 중 하나에 해당
+- 카메라 졸음 감지가 3회 연속 발생
+
+## 적용한 C++ 설계 요소
+
+- `ClientHandler`와 `AssessmentRule`의 런타임 다형성
+- Registry 기반 Factory로 타입 분기 격리
+- `std::unique_ptr`를 통한 구현 객체 소유권 표현
+- 소켓과 파일 디스크립터의 RAII
+- `BlockingQueue<T>` 템플릿과 `std::mutex`/`std::condition_variable`
+- 전역 공유 상태를 `PpgRepository`, `DrowsinessAssessor` 객체로 캡슐화
+- 의존성 주입이 가능한 `AlertPublisher`, `MessageParser` 인터페이스
+- TCP 분할·병합을 고려한 JSON 객체/개행 메시지 프레이밍
+- 입력 필드와 포트 범위 검증
+
+## 디렉터리
+
+```text
+include/hams/
+├── alert/          알림 출력 포트
+├── assessment/     판정 규칙과 서비스
+├── concurrency/    타입 안전 BlockingQueue
+├── domain/         값 객체와 enum
+├── handlers/       클라이언트별 다형적 Handler
+├── net/            RAII 소켓과 TCP 세션
+├── protocol/       메시지 파서
+├── repository/     최근 PPG 데이터 저장소
+└── server/         연결 수락 및 Handler 실행
+```
+
+## 빌드
+
+서버의 소켓과 named pipe 구현은 Raspberry Pi/Linux를 대상으로 합니다.
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+ctest --test-dir build --output-on-failure
+./build/hams_assessment_server 8080
+```
+
+현재 GPS 프로세스가 읽는 FIFO에 맞춰 알림 경로를
+`/tmp/symptom_pipe`로 통일했습니다.
+
+## TCP 메시지
+
+초기 식별 메시지:
+
+```json
+{"id":"hrv"}
+```
+
+HRV 데이터:
+
+```json
+{
+  "signal": 510,
+  "bpm": 72,
+  "ibi": 833,
+  "sdnn": 42.5,
+  "rmssd": 31.2,
+  "pnn50": 0.33,
+  "timestamp": 1720000000
+}
+```
+
+메시지는 개행으로 구분하는 NDJSON을 권장합니다. 이전 클라이언트와의
+호환을 위해 완결된 최상위 JSON 객체도 개행 없이 인식합니다.
+
+## 기존 C 구현에서 해결한 문제
+
+- HRV 연결 종료 시 전역 큐가 파괴되던 수명 오류 제거
+- 스레드 실행 상태 플래그와 분리된 자원 수명 문제 제거
+- 길이 제한 없는 `strcpy` 제거
+- `recv()` 한 번을 JSON 하나로 가정하던 TCP 경계 문제 개선
+- 알 수 없는 ID가 부정맥으로 처리되던 기본 분기 제거
+- Assessment와 GPS 프로세스의 FIFO 경로 불일치 수정
+- 수동 `malloc/free`, 소켓 `close` 경로를 RAII로 대체
